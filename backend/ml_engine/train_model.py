@@ -3,12 +3,13 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
+import xgboost as xgb
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from hyperopt import hp, fmin, tpe, Trials, STATUS_OK
 
 SEED = 42
 np.random.seed(SEED)
@@ -54,16 +55,19 @@ SOIL_MULTIPLIER = {
     "Black Cotton": 1.18,
     "Loamy": 1.00,
 }
+GREEN_CERT_MULTIPLIER = {"No": 1.00, "Silver": 1.05, "Gold": 1.12}
 
 
-def generate_dataset(n_samples: int = 6500) -> pd.DataFrame:
+def generate_dataset(n_samples: int = 20000) -> pd.DataFrame:
     cities = list(CITY_MULTIPLIERS.keys())
     materials = list(MATERIAL_MULTIPLIER.keys())
     soil_types = list(SOIL_MULTIPLIER.keys())
+    green_certs = list(GREEN_CERT_MULTIPLIER.keys())
 
     records = []
     for _ in range(n_samples):
         city = np.random.choice(cities)
+        inflation_year = np.random.randint(2020, 2026)
         plot_area = np.random.randint(600, 4201)
         floors = np.random.choice([1, 2, 3, 4], p=[0.28, 0.41, 0.23, 0.08])
         bhk = np.random.choice([1, 2, 3, 4, 5], p=[0.04, 0.27, 0.39, 0.22, 0.08])
@@ -71,11 +75,13 @@ def generate_dataset(n_samples: int = 6500) -> pd.DataFrame:
         builtup_area = np.clip(plot_area * builtup_factor * floors, 500, 12000)
         material = np.random.choice(materials, p=[0.54, 0.33, 0.13])
         soil = np.random.choice(soil_types, p=[0.20, 0.23, 0.24, 0.11, 0.22])
+        green_cert = np.random.choice(green_certs, p=[0.7, 0.2, 0.1])
 
-        base_cost_psft = np.random.uniform(1650, 2350)
+        base_cost_psft = np.random.uniform(1650, 2350) * (1.02 ** (inflation_year - 2023))
         city_factor = CITY_MULTIPLIERS[city]
         material_factor = MATERIAL_MULTIPLIER[material]
         soil_factor = SOIL_MULTIPLIER[soil]
+        green_factor = GREEN_CERT_MULTIPLIER[green_cert]
         floors_factor = 1 + (floors - 1) * 0.055
         complexity_factor = 1 + (bhk - 2) * 0.03
 
@@ -85,6 +91,7 @@ def generate_dataset(n_samples: int = 6500) -> pd.DataFrame:
             * city_factor
             * material_factor
             * soil_factor
+            * green_factor
             * floors_factor
             * complexity_factor
         )
@@ -96,12 +103,14 @@ def generate_dataset(n_samples: int = 6500) -> pd.DataFrame:
         records.append(
             {
                 "city": city,
+                "inflation_year": int(inflation_year),
                 "plot_area_sqft": float(plot_area),
                 "builtup_area_sqft": float(round(builtup_area, 2)),
                 "floors": int(floors),
                 "bhk": int(bhk),
                 "material_tier": material,
                 "soil_type": soil,
+                "green_cert": green_cert,
                 "estimated_cost_inr": float(round(total_cost, 2)),
             }
         )
@@ -134,10 +143,12 @@ def train_and_serialize(df: pd.DataFrame) -> None:
         ]
     )
 
-    model = RandomForestRegressor(
-        n_estimators=450,
-        max_depth=28,
-        min_samples_leaf=2,
+    model = xgb.XGBRegressor(
+        n_estimators=500,
+        max_depth=10,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
         random_state=SEED,
         n_jobs=-1,
     )

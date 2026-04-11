@@ -52,12 +52,14 @@ def predict_construction_cost(payload: Dict[str, Any]) -> float:
     row = [
         [
             payload["city"],
+            payload.get("inflation_year", 2024),
             payload["plot_area_sqft"],
             payload["builtup_area_sqft"],
             payload["floors"],
             payload["bhk"],
             payload["material_tier"],
             payload["soil_type"],
+            payload.get("green_cert", "No"),
         ]
     ]
     prediction = model.predict(row)[0]

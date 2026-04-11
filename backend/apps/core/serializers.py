@@ -19,8 +19,7 @@ class OTPVerifySerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=120, required=False, allow_blank=True)
 
 
-class CostPredictionInputSerializer(serializers.Serializer):
-    city = serializers.CharField(max_length=100)
+
     plot_area_sqft = serializers.FloatField(min_value=300, max_value=10000)
     builtup_area_sqft = serializers.FloatField(min_value=250, max_value=15000)
     floors = serializers.IntegerField(min_value=1, max_value=10)

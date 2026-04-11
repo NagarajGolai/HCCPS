@@ -43,9 +43,21 @@ class OTPRequestView(APIView):
             )
 
         otp = create_otp(email=payload["email"], purpose=payload["purpose"])
+        from django.core.mail import send_mail
+        try:
+            send_mail(
+                "PropVerse AI OTP Code",
+                f"Your OTP is {otp.code}. Valid for 5 minutes.",
+                None,
+                [payload["email"]],
+                fail_silently=False,
+            )
+            dev_msg = "OTP sent via email + dev preview"
+        except Exception as e:
+            dev_msg = f"Email failed ({str(e)}), using dev preview"
         return Response(
             {
-                "detail": "OTP generated successfully (simulated delivery).",
+                "detail": dev_msg,
                 "otp_preview_for_dev": otp.code,
             },
             status=status.HTTP_200_OK,
