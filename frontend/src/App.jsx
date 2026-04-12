@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 
 import { fetchSubscriptionStatus, predictCost } from "./api/proptechApi";
 import AnalysisPanel from "./components/AnalysisPanel";
 import AIArchitectChat from "./components/AIArchitectChat";
-import AuthPanel from "./components/AuthPanel";
 import Checkout from "./components/Checkout";
 import DeveloperSettings from "./components/DeveloperSettings";
 import ExportEngine from "./components/ExportEngine";
@@ -17,6 +16,9 @@ import PredictorForm from "./components/PredictorForm";
 import SEO from "./components/SEO";
 import MainLayout from "./layouts/MainLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import LandingPage from "./pages/LandingPage";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 import { analyzeEcoScore, analyzeVastuScore, generateBoq } from "./utils/AnalysisEngine";
 import { useAuth } from "./hooks/useAuth";
 
@@ -40,18 +42,7 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const floorPlanRef = useRef(null);
 
-  const {
-    user,
-    loading: authLoading,
-    otpLoading,
-    devOtp,
-    error: authError,
-    message,
-    isAuthenticated,
-    initiateOtp,
-    completeOtpVerification,
-    logout,
-  } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const computedDensity = useMemo(() => {
     const plot = Number(formData.plot_area_sqft);
@@ -115,8 +106,25 @@ export default function App() {
     <MainLayout user={user} onLogout={logout}>
       <SEO title={seoTitle} description={seoDescription} urlPath={seoPath} />
       <MarketDashboard />
-      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-        <div className="grid gap-6">
+      {!isAuthenticated && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 backdrop-blur"
+        >
+          <p className="text-sm text-amber-100">
+            Sign in to run ML predictions and sync your subscription.
+          </p>
+          <Link
+            to="/signin"
+            className="shrink-0 rounded-lg border border-cyan-500/50 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:border-cyan-400 hover:bg-cyan-500/25"
+          >
+            Go to sign in
+          </Link>
+        </motion.div>
+      )}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.28fr)]">
+        <div className="grid min-w-0 gap-6">
           <PredictorForm
             formData={formData}
             onChange={handleFieldChange}
@@ -159,8 +167,8 @@ export default function App() {
           <DeveloperSettings isAuthenticated={isAuthenticated} />
         </div>
 
-        <div className="grid gap-6">
-          <div ref={floorPlanRef} className="relative">
+        <div className="grid min-w-0 gap-6 xl:sticky xl:top-6 xl:self-start xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto xl:pr-1">
+          <div ref={floorPlanRef} className="relative flex flex-col gap-4">
             <FloorViewer
               formData={formData}
               onViewModeChange={(mode) => posthog.capture("floor_view_mode_toggled", { mode })}
@@ -172,17 +180,6 @@ export default function App() {
               predictedCostInr={prediction?.predicted_cost_inr || null}
             />
           </div>
-          {!isAuthenticated && (
-            <AuthPanel
-              initiateOtp={initiateOtp}
-              completeOtpVerification={completeOtpVerification}
-              otpLoading={otpLoading}
-              loading={authLoading}
-              devOtp={devOtp}
-              error={authError}
-              message={message}
-            />
-          )}
         </div>
       </div>
       <Checkout
@@ -196,14 +193,11 @@ export default function App() {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={renderConsumerPage(
-          "PropVerse AI | Construction Cost Predictor",
-          "AI-powered construction planning with 3D floor intelligence, Vastu checks, and sustainability scoring.",
-          "/"
-        )}
-      />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/signin" element={<SignInPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/SignIn" element={<Navigate to="/signin" replace />} />
+      <Route path="/SignUp" element={<Navigate to="/signup" replace />} />
       <Route
         path="/predictor"
         element={renderConsumerPage(

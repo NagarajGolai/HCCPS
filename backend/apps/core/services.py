@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import joblib
 import numpy as np
+import pandas as pd
 from django.conf import settings
 from django.utils import timezone
 
@@ -49,18 +50,18 @@ def _load_model():
 
 def predict_construction_cost(payload: Dict[str, Any]) -> float:
     model = _load_model()
-    row = [
+    frame = pd.DataFrame(
         [
-            payload["city"],
-            payload.get("inflation_year", 2024),
-            payload["plot_area_sqft"],
-            payload["builtup_area_sqft"],
-            payload["floors"],
-            payload["bhk"],
-            payload["material_tier"],
-            payload["soil_type"],
-            payload.get("green_cert", "No"),
+            {
+                "city": payload["city"],
+                "plot_area_sqft": payload["plot_area_sqft"],
+                "builtup_area_sqft": payload["builtup_area_sqft"],
+                "floors": payload["floors"],
+                "bhk": payload["bhk"],
+                "material_tier": payload["material_tier"],
+                "soil_type": payload["soil_type"],
+            }
         ]
-    ]
-    prediction = model.predict(row)[0]
+    )
+    prediction = model.predict(frame)[0]
     return float(np.round(prediction, 2))

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function MainLayout({ children, user, onLogout }) {
   return (
@@ -15,8 +16,13 @@ export default function MainLayout({ children, user, onLogout }) {
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
                 Premium Prop-Tech Intelligence
               </p>
-              <h1 className="mt-1 bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-3xl font-bold text-transparent md:text-4xl">
-                PropVerse AI Construction Studio
+              <h1 className="mt-1 text-3xl font-bold md:text-4xl">
+                <Link
+                  to="/"
+                  className="bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent transition hover:opacity-90"
+                >
+                  PropVerse AI Construction Studio
+                </Link>
               </h1>
             </div>
             <div className="flex items-center gap-3">
@@ -34,9 +40,12 @@ export default function MainLayout({ children, user, onLogout }) {
                   </button>
                 </>
               ) : (
-                <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1 text-sm text-amber-200">
-                  OTP Sign-In Required
-                </span>
+                <Link
+                  to="/signin"
+                  className="rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:border-cyan-400/50 hover:text-cyan-100"
+                >
+                  Sign in
+                </Link>
               )}
             </div>
           </div>

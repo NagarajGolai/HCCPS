@@ -138,7 +138,7 @@ export default function FloorViewer({ formData, onViewModeChange }) {
           ))}
         </div>
       </div>
-      <div className="h-[350px] overflow-hidden rounded-xl border border-slate-700/50">
+      <div className="h-[min(360px,calc(100vh-20rem))] overflow-hidden rounded-xl border border-slate-700/50 sm:h-[min(400px,calc(100vh-18rem))] lg:h-[min(480px,calc(100vh-14rem))] xl:h-[min(540px,calc(100vh-12rem))]">
         <Canvas shadows camera={{ position: [7.5, 6.8, 8], fov: 45 }}>
           <ambientLight intensity={0.45} />
           <directionalLight
