@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { CITY_OPTIONS, MATERIAL_OPTIONS, SOIL_OPTIONS } from "../constants";
+
 
 export default function PredictorForm({
   formData,
@@ -12,146 +14,198 @@ export default function PredictorForm({
   const blocked = !isAuthenticated || loading;
 
   return (
-    <motion.form
-      initial={{ opacity: 0, x: -12 }}
-      animate={{ opacity: 1, x: 0 }}
-      onSubmit={onSubmit}
-      className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-6 shadow-glow backdrop-blur"
-    >
-      <h2 className="text-xl font-semibold text-slate-100">ML Cost Predictor</h2>
-      <p className="mt-1 text-sm text-slate-400">
-        Live estimator synced with your backend Random Forest pipeline.
-      </p>
+      <motion.form
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        onSubmit={onSubmit}
+        className="pro-card p-6 shadow-pro-lift hover:shadow-pro-glow"
+      >
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <Field
-          label="City"
-          name="city"
-          value={formData.city}
-          onChange={onChange}
-          disabled={blocked}
-          type="select"
-          options={CITY_OPTIONS}
-        />
-        <Field
-          label="Material Tier"
-          name="material_tier"
-          value={formData.material_tier}
-          onChange={onChange}
-          disabled={blocked}
-          type="select"
-          options={MATERIAL_OPTIONS}
-        />
-        <Field
-          label="Built-up Area (sq ft)"
+      <div className="mb-10">
+        <h2 className="text-4xl font-black bg-gradient-to-r from-pro-blue-600 to-pro-blue-700 bg-clip-text text-transparent mb-4 pro-h1">
+          🤖 ML Cost Engine
+        </h2>
+
+        <p className="text-pro-bg-600 text-xl leading-relaxed mb-8">
+          Live Random Forest predictions powered by your backend model. Updates instantly with market data.
+        </p>
+      </div>
+
+      <div className="pro-grid lg:grid-cols-2 gap-8">
+        <div>
+          <label className="pro-label">
+            City Market
+          </label>
+
+          <select
+            name="city"
+            value={formData.city}
+            onChange={onChange}
+            disabled={blocked}
+            className="pro-input pro-select focus:shadow-pro-glow"
+          >
+            {CITY_OPTIONS.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-bold uppercase tracking-[0.2em] text-coffee-tan">
+            Finish Quality
+          </label>
+          <select
+            name="material_tier"
+            value={formData.material_tier}
+            onChange={onChange}
+            disabled={blocked}
+            className="h-16 w-full rounded-3xl border border-coffee-latte/50 bg-coffee-dark/80 px-6 text-xl font-semibold text-coffee-cream focus:border-coffee-foam/70 focus:ring-4 focus:ring-coffee-latte/30 focus:outline-none transition-all duration-300 shadow-lg hover:shadow-coffee-glow disabled:opacity-50"
+          >
+            {MATERIAL_OPTIONS.map(tier => (
+              <option key={tier} value={tier}>{tier}</option>
+            ))}
+          </select>
+        </div>
+
+        <InputField
+          label="Built-up Area (sqft)"
           name="builtup_area_sqft"
           value={formData.builtup_area_sqft}
           onChange={onChange}
-          disabled={blocked}
-          type="number"
           min={250}
           max={15000}
-          step={1}
+          blocked={blocked}
         />
-        <Field
-          label="BHK (Rooms)"
-          name="bhk"
-          value={formData.bhk}
-          onChange={onChange}
-          disabled={blocked}
-          type="number"
-          min={1}
-          max={10}
-          step={1}
-        />
-        <Field
-          label="Floors"
-          name="floors"
-          value={formData.floors}
-          onChange={onChange}
-          disabled={blocked}
-          type="number"
-          min={1}
-          max={10}
-          step={1}
-        />
-        <Field
-          label="Soil Type"
-          name="soil_type"
-          value={formData.soil_type}
-          onChange={onChange}
-          disabled={blocked}
-          type="select"
-          options={SOIL_OPTIONS}
-        />
-      </div>
 
-      <div className="mt-4">
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">
-          Plot Area (sq ft)
-        </label>
-        <input
-          type="range"
+        <InputField
+          label="Plot Size (sqft)"
           name="plot_area_sqft"
+          value={formData.plot_area_sqft}
+          onChange={onChange}
           min={300}
           max={10000}
-          step={50}
-          value={formData.plot_area_sqft}
-          disabled={blocked}
-          onChange={onChange}
-          className="w-full accent-cyan-400"
+          blocked={blocked}
         />
-        <div className="mt-1 text-right text-sm text-cyan-200">
-          {Number(formData.plot_area_sqft).toLocaleString("en-IN")} sq ft
+
+        <div className="lg:col-span-2">
+          <label className="mb-3 block text-sm font-bold uppercase tracking-[0.2em] text-coffee-tan">
+            Rooms & Structure
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <InputField label="BHK" name="bhk" value={formData.bhk} min={1} max={10} blocked={blocked} />
+            <InputField label="Floors" name="floors" value={formData.floors} min={1} max={10} blocked={blocked} />
+            <div>
+              <label className="text-sm font-bold text-coffee-tan uppercase tracking-wider block mb-3">
+                Soil Type
+              </label>
+              <select
+                name="soil_type"
+                value={formData.soil_type}
+                onChange={onChange}
+                disabled={blocked}
+                className="h-16 w-full rounded-3xl border border-coffee-latte/50 bg-coffee-dark/80 px-6 text-lg font-semibold text-coffee-cream focus:border-coffee-foam/70 focus:ring-4 focus:ring-coffee-latte/30 focus:outline-none transition-all shadow-lg hover:shadow-coffee-glow disabled:opacity-50"
+              >
+                {SOIL_OPTIONS.map(soil => (
+                  <option key={soil} value={soil}>{soil}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      {apiError && (
-        <p className="mt-4 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
-          {apiError}
-        </p>
-      )}
-      {!isAuthenticated && (
-        <p className="mt-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
-          Complete OTP sign-in to invoke `/predict-cost/`.
-        </p>
+      {/* Plot Slider */}
+      {!blocked && (
+        <div className="mt-8 p-6 bg-coffee-bean/20 border border-coffee-latte/40 rounded-3xl coffee-glow">
+          <label className="block text-sm font-bold uppercase tracking-[0.2em] text-coffee-tan mb-4">
+            Plot Size Range
+          </label>
+          <input
+            type="range"
+            name="plot_area_sqft"
+            min="300"
+            max="10000"
+            step="50"
+            value={formData.plot_area_sqft}
+            onChange={onChange}
+            className="w-full h-3 bg-coffee-dark/50 rounded-lg appearance-none cursor-pointer accent-coffee-cream [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-coffee-cream [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:hover:shadow-coffee-glow"
+          />
+          <div className="flex justify-between text-xs text-coffee-tan mt-2 font-mono">
+            <span>300 sqft</span>
+            <span className="font-bold text-coffee-cream text-lg">{formData.plot_area_sqft.toLocaleString()} sqft</span>
+            <span>10,000 sqft</span>
+          </div>
+        </div>
       )}
 
-      <button
+      {/* Status Messages */}
+      <div className="space-y-4 mt-8">
+        {apiError && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-6 rounded-3xl border-2 border-rose-500/50 bg-gradient-to-r from-rose-500/10 to-red-500/10 text-rose-200 font-semibold coffee-glow shadow-lg"
+          >
+            {apiError}
+          </motion.div>
+        )}
+        {!isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-6 rounded-3xl border-2 border-amber-500/50 bg-gradient-to-r from-amber-500/10 to-orange-500/10 text-amber-200 font-semibold coffee-glow shadow-lg"
+          >
+            🔐 Sign in with OTP to unlock ML predictions and sync your Pro subscription.
+            <Link to="/signin" className="ml-2 underline hover:text-amber-300 font-bold block mt-2">→ Sign In</Link>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Run Button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={blocked}
-        className="mt-5 h-12 w-full rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45"
+        className="group mt-12 h-20 w-full rounded-4xl bg-gradient-to-r from-coffee-roast via-coffee-latte to-coffee-cream text-2xl font-black text-coffee-dark shadow-2xl coffee-glow hover:brightness-110 hover:shadow-[0_0_0_1px_rgba(212,196,168,0.8),0_25px_60px_-12px_rgba(62,42,29,0.6)] focus:outline-none focus:ring-8 focus:ring-coffee-latte/40 transition-all duration-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:brightness-75"
       >
-        {loading ? "Computing Neural Prediction..." : "Generate Construction Estimate"}
-      </button>
+        <span className="transition-all group-hover:translate-x-3">
+          {loading ? (
+            <>
+              <span className="inline-flex items-center gap-3">
+                Computing Neural Network...
+                <svg className="animate-spin w-8 h-8" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                </svg>
+              </span>
+            </>
+          ) : (
+            "🚀 Generate Construction Estimate"
+          )}
+        </span>
+      </motion.button>
     </motion.form>
   );
 }
 
-function Field({ label, type, options, ...props }) {
+function InputField({ label, name, value, onChange, min, max, blocked }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">
+      <label className="mb-3 block text-sm font-bold uppercase tracking-[0.2em] text-coffee-tan">
         {label}
       </label>
-      {type === "select" ? (
-        <select
-          {...props}
-          className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400"
-        >
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <input
-          {...props}
-          type={type}
-          className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400"
-        />
-      )}
+      <input
+        type="number"
+        name={name}
+        value={value}
+        onChange={onChange}
+        min={min}
+        max={max}
+        disabled={blocked}
+        className="h-16 w-full rounded-3xl border border-coffee-latte/50 bg-coffee-dark/80 px-6 text-2xl font-mono font-bold text-coffee-cream focus:border-coffee-foam/70 focus:ring-4 focus:ring-coffee-latte/30 focus:outline-none transition-all duration-300 shadow-xl hover:shadow-coffee-glow disabled:opacity-50"
+      />
     </div>
   );
 }
+

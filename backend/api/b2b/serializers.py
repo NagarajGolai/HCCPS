@@ -20,4 +20,6 @@ class APIKeyListSerializer(serializers.Serializer):
 
 
 class B2BPredictionRequestSerializer(CostPredictionInputSerializer):
-    pass
+    client_name = serializers.CharField(max_length=200, allow_blank=True)
+    project_id = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    notes = serializers.CharField(max_length=1000, required=False, allow_blank=True, default="")

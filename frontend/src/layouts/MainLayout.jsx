@@ -3,55 +3,58 @@ import { Link } from "react-router-dom";
 
 export default function MainLayout({ children, user, onLogout }) {
   return (
-    <div className="min-h-screen bg-slate-950 bg-aurora-gradient text-slate-100">
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8">
-        <motion.header
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-5 shadow-glow backdrop-blur"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-                Premium Prop-Tech Intelligence
-              </p>
-              <h1 className="mt-1 text-3xl font-bold md:text-4xl">
-                <Link
-                  to="/"
-                  className="bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent transition hover:opacity-90"
-                >
-                  PropVerse AI Construction Studio
-                </Link>
-              </h1>
-            </div>
-            <div className="flex items-center gap-3">
-              {user ? (
-                <>
-                  <span className="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-100">
-                    {user.name || user.email}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400 hover:text-cyan-200"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/signin"
-                  className="rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-200 transition hover:border-cyan-400/50 hover:text-cyan-100"
-                >
-                  Sign in
-                </Link>
-              )}
-            </div>
+    <div className="pro-layout pro-container">
+      <motion.header
+        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="sticky top-4 z-40 mb-12 pro-card p-6 shadow-pro-lift pro-lift-hover border-pro-blue-200/50 backdrop-blur-xl"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-pro-blue-300 mb-2">
+              Construction Intelligence Platform
+            </p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold pro-h1">
+              <Link to="/" className="pro-lift-hover group">
+                PropVerse AI
+              </Link>
+            </h1>
           </div>
-        </motion.header>
+          <div className="flex items-center gap-4">
+            {user ? (
+              <>
+                <motion.span 
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="px-4 py-2 text-sm font-semibold bg-pro-bg-900/50 border border-pro-bg-400/50 rounded-xl backdrop-blur-xl truncate max-w-[200px]"
+                >
+                  {user.name || user.email}
+                </motion.span>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="pro-btn-secondary px-6 py-2.5 text-sm font-semibold shadow-pro-soft hover:shadow-pro-lift pro-lift-hover whitespace-nowrap"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/signin"
+                className="pro-btn px-6 py-2.5 text-sm font-semibold shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+        </div>
+      </motion.header>
+      <main className="relative z-10">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
+
+

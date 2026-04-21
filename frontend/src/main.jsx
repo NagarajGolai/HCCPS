@@ -22,7 +22,12 @@ if (import.meta.env.VITE_POSTHOG_KEY) {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HelmetProvider>
-      <BrowserRouter>
+      <BrowserRouter 
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Sentry.ErrorBoundary fallback={<p className="p-6 text-rose-300">A rendering error occurred.</p>}>
           <App />
         </Sentry.ErrorBoundary>
@@ -30,3 +35,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </HelmetProvider>
   </React.StrictMode>
 );
+

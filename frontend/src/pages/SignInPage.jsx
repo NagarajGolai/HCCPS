@@ -27,20 +27,20 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 bg-aurora-gradient text-slate-100">
+    <div className="min-h-screen bg-pro-bg-50">
       <SEO
         title="Sign in | PropVerse AI"
         description="Passwordless OTP sign-in to PropVerse AI construction intelligence and ML cost predictor."
         urlPath="/signin"
       />
-      <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
+      <div className="pro-container py-10 lg:py-16">
         <AuthTopNav user={user} isAuthenticated={isAuthenticated} onLogout={logout} active="signin" />
 
-        <div className="grid items-start gap-12 lg:grid-cols-[1fr_minmax(0,420px)] xl:grid-cols-[1.15fr_minmax(0,440px)] xl:gap-16">
+        <div className="pro-grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           <AuthPageDecoration mode="signin" />
 
           <div className="relative">
-            <div className="pointer-events-none absolute -inset-1 rounded-3xl bg-gradient-to-br from-cyan-500/20 via-transparent to-violet-500/20 opacity-70 blur-xl" />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-pro-blue-50/30 via-white/10 opacity-50 blur-lg" />
             <motion.div
               initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -49,19 +49,18 @@ export default function SignInPage() {
                   ? { duration: 0.01 }
                   : { duration: 0.55, delay: 0.12, ease: [0.22, 1, 0.36, 1] }
               }
-              className="relative"
+              className="relative pro-card shadow-pro-lift p-8 lg:p-10"
             >
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300">Welcome back</p>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-100 md:text-4xl">
-                Sign in to your{" "}
-                <span className="bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">
-                  workspace
-                </span>
-              </h1>
-              <p className="mt-3 text-sm text-slate-400">
-                Use the email already on your team— we will email a one-time code.
+              <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-pro-bg-600">
+                Welcome back
               </p>
-              <div className="mt-8">
+              <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-pro-bg-900 mb-4 leading-tight pro-h1">
+                Sign in to PropVerse
+              </h1>
+              <p className="mb-10 text-lg text-pro-bg-600 leading-relaxed max-w-md">
+                Enter email—we'll send secure OTP to your inbox.
+              </p>
+              <div className="space-y-6">
                 <SignInForm
                   initiateOtp={initiateOtp}
                   completeOtpVerification={completeOtpVerification}
@@ -76,11 +75,11 @@ export default function SignInPage() {
                 initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: reduceMotion ? 0 : 0.35 }}
-                className="mt-6 text-center text-sm text-slate-500"
+                className="mt-10 text-center text-md text-pro-bg-600"
               >
                 New to PropVerse?{" "}
-                <Link to="/signup" className="font-semibold text-cyan-300 transition hover:text-cyan-200">
-                  Create an account
+                <Link to="/signup" className="font-bold text-pro-blue-600 hover:text-pro-blue-700 hover:underline transition-all">
+                  Create engineering account
                 </Link>
               </motion.p>
             </motion.div>
@@ -91,13 +90,14 @@ export default function SignInPage() {
           initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: reduceMotion ? 0 : 0.5 }}
-          className="mt-16 text-center text-xs text-slate-500"
+          className="mt-24 text-center text-sm text-pro-bg-500 pt-12 border-t border-pro-bg-200"
         >
-          <Link to="/" className="text-slate-400 transition hover:text-cyan-300">
-            ← Back to home
+          <Link to="/" className="inline-flex items-center gap-2 text-pro-bg-600 hover:text-pro-blue-600 font-medium transition-colors">
+            ← Back to Construction Intelligence
           </Link>
         </motion.footer>
       </div>
     </div>
   );
 }
+

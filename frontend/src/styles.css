@@ -3,39 +3,83 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #155e75 #020617;
+  --pro-bg-primary: #0f172a;
+  --pro-bg-secondary: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --pro-card-bg: rgba(255,255,255,0.06);
+  --pro-border-subtle: rgba(148,163,184,0.2);
+  --pro-text-primary: #f8fafc;
+  --pro-text-secondary: #cbd5e1;
+  --pro-blue-primary: #3b82f6;
+  --pro-green-primary: #22c55e;
+  --pro-gold-primary: #eab308;
+  --pro-shadow-soft: 0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+  --pro-shadow-lift: 0 10px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(59,130,246,0.1);
 }
 
 body {
-  margin: 0;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica Neue,
-    Arial,
-    sans-serif;
+  background: var(--pro-bg-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--pro-text-primary);
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
-.ticker-track {
-  animation: ticker 32s linear infinite;
-  display: inline-block;
-  padding-right: 2rem;
+.pro-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-@keyframes ticker {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+.pro-card {
+  background: var(--pro-card-bg);
+  border: 1px solid var(--pro-border-subtle);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-btn {
+  background: linear-gradient(135deg, var(--pro-blue-primary), #1d4ed8);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pro-shadow-lift);
+}
+
+.pro-input {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--pro-border-subtle);
+  border-radius: 16px;
+  padding: 0.875rem 1.25rem;
+  color: var(--pro-text-primary);
+  transition: all 0.3s ease;
+}
+
+.pro-input:focus {
+  outline: none;
+  border-color: var(--pro-blue-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.pro-h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--pro-text-primary), var(--pro-blue-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

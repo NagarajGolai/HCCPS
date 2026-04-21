@@ -1,329 +1,261 @@
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
-
-import SEO from "../components/SEO";
 import { useAuth } from "../hooks/useAuth";
+import SEO from "../components/SEO";
+import { useRef, useEffect } from 'react';
 
 const features = [
   {
-    title: "ML cost intelligence",
-    body: "Random Forest–backed estimates tuned for Indian cities, materials, and soil context.",
-    tone: "text-cyan-200",
+    title: "AI Cost Prediction",
+    body: "Machine learning estimates fine-tuned for Indian construction realities, materials and markets.",
+    icon: "📊"
   },
   {
-    title: "3D floor studio",
-    body: "Interactive visualization so stakeholders see spatial program and massing in one view.",
-    tone: "text-sky-200",
+    title: "Live Floor Studio", 
+    body: "Interactive 3D CAD for instant BOQ, area calculations, and stakeholder presentations.",
+    icon: "🏠"
   },
   {
-    title: "Sustainability & Vastu",
-    body: "Eco and Vastu scoring layered on your inputs—not bolted-on PDFs.",
-    tone: "text-emerald-200",
+    title: "Material Intelligence",
+    body: "Steel, cement, aggregate rates from 100+ Indian cities updated daily.",
+    icon: "⚙️"
   },
   {
-    title: "Exports & pro workflow",
-    body: "BOQ and exports for teams that need shareable deliverables, not just a number.",
-    tone: "text-violet-200",
+    title: "Engineering Deliverables",
+    body: "Team exports, API access, compliance documentation – production ready.",
+    icon: "📄"
   },
 ];
 
 export default function LandingPage() {
-  const { user, isAuthenticated, logout } = useAuth();
-
+  const { user, isAuthenticated } = useAuth();
   const reduceMotion = useReducedMotion();
-  const transition = reduceMotion ? { duration: 0.01 } : { duration: 0.55, ease: [0.22, 1, 0.36, 1] };
-  const itemTransition = reduceMotion ? { duration: 0.01 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] };
-  const fadeUp = (delay = 0) =>
-    reduceMotion
-      ? { initial: false, animate: { opacity: 1, y: 0 } }
-      : {
-          initial: { opacity: 0, y: 18 },
-          animate: { opacity: 1, y: 0 },
-          transition: { ...itemTransition, delay },
-        };
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
+
+  const fadeInUp = (delay = 0) => ({
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: 0.6,
+      delay: reduceMotion ? 0 : 0.2 + delay,
+    },
+  });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.body.classList.add('pro-scroll-smooth');
+    }
+    return () => document.body.classList.remove('pro-scroll-smooth');
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 bg-aurora-gradient text-slate-100">
-      <SEO
-        title="PropVerse AI | Smart Construction Intelligence"
-        description="AI-powered construction planning with ML cost prediction, 3D floor intelligence, Vastu checks, and sustainability scoring."
+    <div className="pro-layout">
+      <SEO 
+        title="PropVerse AI | Construction Intelligence Platform"
+        description="Professional AI platform for construction cost prediction, floor planning CAD, and live material market intelligence."
         urlPath="/"
       />
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8">
-        <motion.header
-          initial={reduceMotion ? false : { opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={transition}
-          className="mb-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-700/60 bg-slate-900/70 px-5 py-4 shadow-glow backdrop-blur"
-        >
-          <Link to="/" className="text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-              Premium Prop-Tech Intelligence
-            </p>
-            <p className="mt-1 bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-xl font-bold text-transparent md:text-2xl">
-              PropVerse AI
-            </p>
-          </Link>
-          <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-            <Link
-              to="/signin"
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 transition hover:text-cyan-200"
-            >
-              Sign in
-            </Link>
-            <Link
-              to="/signup"
-              className="rounded-lg border border-violet-500/40 bg-violet-500/10 px-3 py-2 text-sm font-semibold text-violet-200 transition hover:border-violet-400 hover:bg-violet-500/20"
-            >
-              Sign up
-            </Link>
-            {isAuthenticated ? (
-              <>
-                <span className="hidden rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1.5 text-sm text-cyan-100 sm:inline">
-                  {user?.name || user?.email}
-                </span>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:border-cyan-400 hover:text-cyan-200"
-                >
-                  Sign out
-                </button>
-                <Link
-                  to="/predictor"
-                  className="rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110 sm:px-5"
-                >
-                  Open studio
-                </Link>
-              </>
-            ) : (
-              <Link
-                to="/predictor"
-                className="rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110 sm:px-5"
-              >
-                Open studio
-              </Link>
-            )}
-          </div>
-        </motion.header>
-
-        <section className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
-          <div>
-            <motion.p
-              {...fadeUp(0)}
-              className="text-xs font-semibold uppercase tracking-[0.28em] text-cyan-300"
-            >
-              Plan builds with confidence
-            </motion.p>
-            <motion.h1
-              {...fadeUp(0.07)}
-              className="mt-3 text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-[3.25rem]"
-            >
-              <span className="bg-gradient-to-r from-cyan-300 via-sky-300 to-violet-300 bg-clip-text text-transparent">
-                Construction intelligence
-              </span>
-              <span className="text-slate-100"> that matches how you actually design.</span>
-            </motion.h1>
-            <motion.p
-              {...fadeUp(0.14)}
-              className="mt-5 max-w-xl text-lg text-slate-400"
-            >
-              From city-level indices to plot-specific estimates, PropVerse AI unifies prediction, 3D
-              context, and compliance-style signals in one studio-grade workspace.
-            </motion.p>
-            <motion.div
-              {...fadeUp(0.21)}
-              className="mt-8 flex flex-wrap items-center gap-4"
-            >
-              <Link
-                to="/predictor"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 px-8 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110"
-              >
-                Launch predictor
-              </Link>
-              <Link
-                to="/signup"
-                className="inline-flex h-12 items-center justify-center rounded-lg border border-slate-600 bg-slate-800/80 px-6 text-sm font-semibold text-slate-100 transition hover:border-cyan-400 hover:text-cyan-200"
-              >
-                Create free account
-              </Link>
-            </motion.div>
-            <motion.p
-              {...fadeUp(0.28)}
-              className="mt-6 text-xs text-slate-500"
-            >
-              Already have access?{" "}
-              <Link to="/signin" className="text-cyan-400/90 hover:text-cyan-300">
-                Sign in
-              </Link>{" "}
-              · Studio at <span className="text-slate-400">/predictor</span>
-            </motion.p>
-          </div>
-
-          <motion.div
-            {...fadeUp(reduceMotion ? 0 : 0.18)}
-            className="relative"
+      <div className="pro-section">
+        {/* Hero Section */}
+        <motion.section {...fadeInUp(0)} className="text-center mb-20">
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 text-md font-bold uppercase tracking-wider text-pro-blue-400"
           >
-            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-cyan-500/15 via-transparent to-violet-500/15 blur-2xl" />
-            <motion.div
-              animate={
-                reduceMotion
-                  ? {}
-                  : { y: [0, -6, 0] }
-              }
-              transition={
-                reduceMotion
-                  ? {}
-                  : { duration: 6, repeat: Infinity, ease: "easeInOut" }
-              }
-              className="relative rounded-2xl border border-cyan-400/25 bg-slate-900/80 p-6 shadow-glow backdrop-blur"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-300">
-                Studio preview
-              </p>
-              <p className="mt-3 text-2xl font-semibold text-slate-100">Dynamic market + ML core</p>
-              <p className="mt-2 text-sm text-slate-400">
-                The dashboard you will see uses glass panels, aurora backdrop, and the same gradient
-                system—so this page and the app feel like one product.
-              </p>
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-700/70 bg-slate-800/55 p-4">
-                  <p className="text-xs uppercase tracking-wider text-slate-400">Estimates</p>
-                  <p className="mt-2 text-lg font-semibold text-cyan-200">City-aware</p>
-                </div>
-                <div className="rounded-xl border border-slate-700/70 bg-slate-800/55 p-4">
-                  <p className="text-xs uppercase tracking-wider text-slate-400">Visualization</p>
-                  <p className="mt-2 text-lg font-semibold text-violet-200">3D floor</p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </section>
-
-        <motion.section
-          initial={reduceMotion ? false : { opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={transition}
-          className="mt-24"
-        >
-          <h2 className="text-center text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            Get started
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-center text-slate-400">
-            Dedicated auth pages with the same OTP flow—no passwords to manage.
-          </p>
-          <div className="mx-auto mt-10 grid max-w-3xl gap-6 sm:grid-cols-2">
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, x: -12, y: 12 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ ...itemTransition, delay: reduceMotion ? 0 : 0.05 }}
-              whileHover={reduceMotion ? {} : { y: -4, transition: { type: "spring", stiffness: 400, damping: 24 } }}
-            >
+            Construction Intelligence
+          </motion.p>
+          <motion.h1 
+            {...fadeInUp(0.2)}
+            className="pro-h1 mb-6 leading-tight max-w-4xl mx-auto"
+          >
+            PropVerse AI Platform
+          </motion.h1>
+          <motion.p 
+            {...fadeInUp(0.4)}
+            className="text-xl md:text-2xl text-pro-bg-400 max-w-3xl mx-auto leading-relaxed mb-12"
+          >
+            Professional AI tools for accurate cost prediction, CAD floor planning, live material pricing, and project analytics.
+          </motion.p>
+          <div className="flex flex-col lg:flex-row gap-8 justify-center items-center">
+            <motion.div {...fadeInUp(0.6)}>
               <Link
-                to="/signup"
-                className="block h-full rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-slate-900/80 p-6 shadow-glow backdrop-blur transition hover:border-violet-400/50"
+                to="/predictor"
+                className="pro-btn group px-10 py-4 text-xl shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">New user</p>
-                <p className="mt-2 text-xl font-bold text-slate-100">Sign up</p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Create your profile with name + email, then verify with a one-time code.
-                </p>
-                <span className="mt-4 inline-flex items-center text-sm font-semibold text-violet-200">
-                  Go to /signup →
+                <span className="transition-all group-hover:translate-x-4 flex items-center gap-4">
+                  Launch Cosmic Estimator →
                 </span>
               </Link>
             </motion.div>
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, x: 12, y: 12 }}
-              whileInView={{ opacity: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ ...itemTransition, delay: reduceMotion ? 0 : 0.12 }}
-              whileHover={reduceMotion ? {} : { y: -4, transition: { type: "spring", stiffness: 400, damping: 24 } }}
-            >
+            <motion.div {...fadeInUp(0.8)}>
               <Link
-                to="/signin"
-                className="block h-full rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-900/80 p-6 shadow-glow backdrop-blur transition hover:border-cyan-400/50"
+                to={isAuthenticated ? "/predictor" : "/signup"}
+                className="pro-btn-secondary px-10 py-4 text-xl font-bold shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Returning</p>
-                <p className="mt-2 text-xl font-bold text-slate-100">Sign in</p>
-                <p className="mt-2 text-sm text-slate-400">
-                  Use your existing email—we send a fresh code every time you log in.
-                </p>
-                <span className="mt-4 inline-flex items-center text-sm font-semibold text-cyan-200">
-                  Go to /signin →
-                </span>
+                {isAuthenticated ? "Nebula Dashboard" : "Enter Free Cosmos"}
               </Link>
             </motion.div>
           </div>
         </motion.section>
 
-        <motion.section
-          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={transition}
-          className="mt-24"
+        {/* Hero Metrics */}
+        <motion.section {...fadeInUp(1)} className="mb-24">
+          <div className="pro-grid md:grid-cols-3 gap-8 items-center">
+            <motion.div className="pro-metric">
+              <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-pro-green-100/50 to-pro-gold-100/50 flex items-center justify-center shadow-pro-soft">
+                <svg className="w-10 h-10 text-pro-green-600" fill="currentColor" viewBox="0 0 80 80">
+                  <path d="M20 20h40v10H20zM25 35h30v10H25zM15 50h50v10H15z"/>
+                  <circle cx="25" cy="27" r="3"/>
+                  <circle cx="55" cy="42" r="3"/>
+                </svg>
+              </div>
+              <h3 className="text-4xl font-bold text-white mb-3">₹3.87 Cr</h3>
+              <p className="text-gray-300 font-semibold text-base">Live Bangalore Rates</p>
+              <p className="text-gray-400 text-xs">4BHK • 2500sqft • Premium</p>
+            </motion.div>
+            <div className="md:col-span-2 pro-grid md:grid-cols-2 gap-6">
+              <motion.div className="pro-metric">
+                <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Steel TMT</p>
+                <p className="text-3xl font-bold text-emerald-400">₹72/kg <span className="text-sm font-medium text-yellow-400">+1.8%</span></p>
+              </motion.div>
+              <motion.div className="pro-metric">
+                <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">OPC Cement</p>
+                <p className="text-3xl font-bold text-emerald-400">₹398/bag</p>
+              </motion.div>
+            </div>
+          </div>
+          <motion.p 
+            {...fadeInUp(1.2)}
+            className="text-center mt-12 text-lg text-pro-bg-600 max-w-3xl mx-auto"
+          >
+            Updates instantly across 120+ Indian markets. Engineered for precision.
+          </motion.p>
+        </motion.section>
+
+        {/* Features */}
+        <motion.section 
+          ref={ref}
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="mb-24 py-16"
         >
-          <h2 className="text-center text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            Why teams use PropVerse
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-slate-400">
-            Everything below mirrors the cards and metrics inside your construction studio.
-          </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((f, i) => (
-              <motion.article
-                key={f.title}
-                initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ ...itemTransition, delay: reduceMotion ? 0 : i * 0.06 }}
-                whileHover={reduceMotion ? {} : { y: -4 }}
-                className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-5 shadow-glow backdrop-blur transition-shadow hover:border-slate-600/80"
+          <motion.h2 {...fadeInUp(0)} className="pro-h2 text-center mb-16 max-w-4xl mx-auto">
+            Complete Engineering Platform
+          </motion.h2>
+          <div className="pro-grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, i) => (
+              <motion.div
+                key={feature.title}
+                {...fadeInUp(i * 0.1)}
+                whileHover={{ y: -8 }}
+                className="pro-card p-8 cursor-pointer pro-lift-hover group border-pro-blue-200/30 hover:border-pro-green-400/50 hover:shadow-pro-lift hover:scale-[1.02]"
               >
-                <h3 className={`text-base font-semibold ${f.tone}`}>{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.body}</p>
-              </motion.article>
+                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-pro-blue-100/50 to-pro-blue-200/50 flex items-center justify-center shadow-pro-soft group-hover:shadow-pro-lift group-hover:scale-105 transition-all">
+                  <span className="text-3xl">{feature.icon}</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-6 group-hover:text-pro-blue-400 transition-colors">{feature.title}</h3>
+                <p className="text-gray-300 leading-relaxed text-lg">{feature.body}</p>
+              </motion.div>
             ))}
           </div>
         </motion.section>
 
-        <motion.section
-          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
+        {/* CTA Section */}
+        <motion.section 
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={transition}
-          className="mt-20 rounded-2xl border border-cyan-400/20 bg-slate-900/80 p-8 text-center shadow-glow backdrop-blur md:p-12"
+          className="pro-card py-20 text-center shadow-pro-lift"
         >
-          <h2 className="text-2xl font-bold text-slate-100 md:text-3xl">
-            Ready to run your next estimate?
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-slate-400">
-            Sign in or create an account, then open the predictor with the same premium UI end to end.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              to="/signup"
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-violet-500/50 bg-violet-500/15 px-8 text-sm font-bold text-violet-100 transition hover:bg-violet-500/25"
-            >
-              Sign up
-            </Link>
+          <motion.h2 
+            initial={{ scale: 0.9 }}
+            whileInView={{ scale: 1 }}
+            className="pro-h2 mb-8 max-w-3xl mx-auto text-white"
+          >
+            Ready for Precision Engineering?
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+          >
+            Join engineering teams delivering precise construction intelligence.
+          </motion.p>
+          <div className="flex flex-col xl:flex-row gap-12 justify-center items-center max-w-5xl mx-auto">
             <Link
               to="/predictor"
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 px-10 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110"
+              className="pro-btn w-full xl:w-auto px-12 py-5 text-xl shadow-pro-lift hover:shadow-pro-glow pro-lift-hover whitespace-nowrap"
             >
-              Go to construction studio
+              <span className="inline-flex items-center gap-4">
+                Cosmic Cost Estimate
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </span>
+            </Link>
+            <Link
+              to="/signup"
+              className="pro-btn-success w-full xl:w-auto px-12 py-5 text-xl font-bold shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
+            >
+              Get Started Free
             </Link>
           </div>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-12 text-lg text-gray-400"
+          >
+            <Link to="/signin" className="font-semibold text-pro-blue-400 hover:text-pro-blue-300 underline-offset-4 transition-all">Already registered? Sign in</Link>
+          </motion.p>
         </motion.section>
 
-        <footer className="mt-16 border-t border-slate-800/80 py-8 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} PropVerse AI · Prop-tech construction intelligence
+        {/* Footer */}
+        <footer className="mt-20 pt-12 pb-12 border-t border-pro-bg-600/30 text-center bg-pro-bg-900/30">
+          <div className="pro-container">
+            <motion.h3 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="pro-h2 mb-6 max-w-2xl mx-auto text-white"
+            >
+              PropVerse AI
+            </motion.h3>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto text-base"
+            >
+              Professional AI platform for construction intelligence.
+            </motion.p>
+            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-300 mb-8">
+              <Link to="/predictor" className="pro-lift-hover px-4 py-2 rounded-xl text-gray-200 hover:text-pro-blue-400 transition-all hover:bg-pro-bg-800/50 px-6">Cost Estimator</Link>
+              <Link to="/floorplanner" className="pro-lift-hover px-4 py-2 rounded-xl text-gray-200 hover:text-pro-blue-400 transition-all hover:bg-pro-bg-800/50 px-6">Floor Planner</Link>
+              <Link to="/pricing" className="nebula-lift-hover px-8 py-4 rounded-nebula-xl text-nebula-text-primary hover:text-nebula-cyan transition-all hover:bg-nebula-purple/10 shadow-nebula-float">Pricing</Link>
+              <Link to="/contact" className="nebula-lift-hover px-8 py-4 rounded-nebula-xl text-nebula-text-primary hover:text-nebula-cyan transition-all hover:bg-nebula-purple/10 shadow-nebula-float">Contact</Link>
+            </div>
+            <p className="text-sm text-nebula-text-secondary/70">
+              © {new Date().getFullYear()} PropVerse Nebula • Engineered for cosmic construction
+            </p>
+          </div>
         </footer>
       </div>
     </div>
   );
 }
+

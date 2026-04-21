@@ -1,131 +1,182 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
-export default function OtpAuthCard({
-  purpose,
-  title,
-  subtitle,
-  showFullName,
-  initiateOtp,
-  completeOtpVerification,
-  otpLoading,
-  loading,
-  devOtp,
-  error,
-  message,
+export default function OtpAuthCard({ 
+  purpose, 
+  title, 
+  subtitle, 
+  showFullName = false,
+  initiateOtp, 
+  completeOtpVerification, 
+  otpLoading, 
+  loading, 
+  devOtp, 
+  error, 
+  message 
 }) {
-  const [form, setForm] = useState({
-    email: "",
-    full_name: "",
-    code: "",
-  });
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [step, setStep] = useState('email'); // 'email' | 'otp'
+  const [otpSent, setOtpSent] = useState(false);
 
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      await initiateOtp({ email, purpose, full_name: showFullName ? fullName : '' });
+      setOtpSent(true);
+      setStep('otp');
+      console.log('Dev OTP preview:', devOtp);
+    } catch (err) {
+      console.error('OTP send failed:', err);
+    }
   };
 
-  const canRequestOtp = form.email.trim() && (!showFullName || form.full_name.trim());
-  const canVerify = form.email && form.code.length === 6;
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) return;
+    try {
+      await completeOtpVerification({ email, purpose, code: otp, full_name: showFullName ? fullName : '' });
+    } catch (err) {
+      console.error('OTP verify failed:', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="pro-card p-12 flex items-center justify-center space-y-4"
+      >
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pro-blue-500 mx-auto" />
+        <p className="text-lg text-pro-bg-600">Authenticating...</p>
+      </motion.div>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-6 shadow-glow backdrop-blur"
+      className="pro-card p-10 space-y-8"
     >
-      <h3 className="text-lg font-semibold text-slate-100">{title}</h3>
-      <p className="mt-1 text-sm text-slate-400">{subtitle}</p>
-
-      <div className="mt-5 grid gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">
-            Email
-          </label>
-          <input
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={form.email}
-            onChange={onChange}
-            placeholder="you@company.com"
-            className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400"
-          />
-        </div>
-        {showFullName && (
-          <div>
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">
-              Full name
-            </label>
-            <input
-              name="full_name"
-              autoComplete="name"
-              value={form.full_name}
-              onChange={onChange}
-              placeholder="Your name"
-              className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400"
-            />
-          </div>
-        )}
-        <button
-          type="button"
-          onClick={() =>
-            initiateOtp({
-              email: form.email.trim(),
-              full_name: form.full_name.trim(),
-              purpose,
-            })
-          }
-          disabled={otpLoading || !canRequestOtp}
-          className="h-11 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-violet-500 text-sm font-bold text-white shadow-lg shadow-cyan-900/35 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {otpLoading ? "Sending code…" : "Send OTP"}
-        </button>
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">
-            One-time code
-          </label>
-          <input
-            name="code"
-            inputMode="numeric"
-            maxLength={6}
-            value={form.code}
-            onChange={onChange}
-            placeholder="6-digit code"
-            className="h-11 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 text-sm tracking-widest text-slate-100 outline-none transition focus:border-cyan-400"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() =>
-            completeOtpVerification({
-              email: form.email.trim(),
-              code: form.code,
-              full_name: form.full_name.trim(),
-              purpose,
-            })
-          }
-          disabled={loading || !canVerify}
-          className="h-11 rounded-lg border border-violet-500/60 bg-violet-500/15 text-sm font-semibold text-violet-100 transition hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {loading ? "Verifying…" : purpose === "signup" ? "Create account" : "Sign in"}
-        </button>
+      <div>
+        <h2 className="text-4xl font-black bg-gradient-to-r from-pro-blue-600 via-pro-blue-500 to-pro-purple-500 bg-clip-text text-transparent mb-4">
+          {title}
+        </h2>
+        <p className="text-xl text-pro-bg-600 leading-relaxed">{subtitle}</p>
       </div>
 
-      {devOtp && (
-        <p className="mt-4 rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
-          Dev OTP: <span className="font-mono font-bold">{devOtp}</span>
-        </p>
+      {step === 'email' ? (
+        <form onSubmit={handleSendOtp} className="space-y-6">
+          {showFullName && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+              <label className="pro-label">Full Name</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="pro-input"
+                placeholder="Engineering Team Lead"
+                required
+              />
+            </motion.div>
+          )}
+          <div>
+            <label className="pro-label">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pro-input"
+              placeholder="team@constructionco.in"
+              required
+            />
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={!email || otpLoading}
+            className="pro-btn w-full h-16 text-xl shadow-pro-lift hover:shadow-pro-glow disabled:opacity-50"
+          >
+            {otpLoading ? 'Sending...' : `Send OTP Code`}
+          </motion.button>
+        </form>
+      ) : (
+        <form onSubmit={handleVerifyOtp} className="space-y-6">
+          <div>
+            <label className="pro-label">OTP Code</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\\D/g, ''))}
+                maxLength={6}
+                className="pro-input text-2xl font-mono tracking-wider text-center"
+                placeholder="123456"
+                autoFocus
+              />
+              {devOtp && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-pro-green-500 font-mono bg-pro-green-100/50 px-2 py-1 rounded-lg">
+                  Dev: {devOtp}
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-pro-bg-500 mt-2">Sent to {email}</p>
+          </div>
+          <div className="flex gap-4 text-sm">
+            <button
+              type="button"
+              onClick={() => setStep('email')}
+              className="flex-1 text-pro-blue-500 hover:text-pro-blue-600 font-semibold py-2"
+            >
+              ← Change Email
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOtpSent(false);
+                setStep('email');
+              }}
+              className="flex-1 text-pro-bg-500 hover:text-pro-bg-600 font-semibold py-2"
+            >
+              Resend (60s)
+            </button>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={otp.length !== 6}
+            className="pro-btn-success w-full h-16 text-xl shadow-pro-lift hover:shadow-pro-glow disabled:opacity-50"
+          >
+            Verify & Continue
+          </motion.button>
+        </form>
       )}
-      {message && (
-        <p className="mt-3 rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-200">
-          {message}
-        </p>
-      )}
+
       {error && (
-        <p className="mt-3 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-6 rounded-2xl border-2 border-rose-400/30 bg-rose-50/50 text-rose-700 font-semibold"
+        >
           {error}
-        </p>
+        </motion.div>
+      )}
+
+      {message && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-6 rounded-2xl border-2 border-emerald-400/30 bg-emerald-50/50 text-emerald-700 font-semibold"
+        >
+          {message}
+        </motion.div>
       )}
     </motion.div>
   );

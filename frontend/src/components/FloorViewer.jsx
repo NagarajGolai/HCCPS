@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
-import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Environment, OrbitControls } from "@react-three/drei"; 
 
 function buildRoomLayout(bhk, width, depth) {
   const roomCount = Math.max(1, Math.min(10, bhk));
@@ -117,27 +118,14 @@ export default function FloorViewer({ formData, onViewModeChange }) {
       className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-4 shadow-glow backdrop-blur"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-100">Live Spatial Symbiosis</h2>
-        <div className="flex gap-2">
-          {["2d", "3d"].map((mode) => (
-            <button
-              type="button"
-              key={mode}
-              onClick={() => {
-                setViewMode(mode);
-                if (onViewModeChange) onViewModeChange(mode);
-              }}
-              className={`rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-wider transition ${
-                viewMode === mode
-                  ? "border-cyan-400 bg-cyan-500/20 text-cyan-100"
-                  : "border-slate-700 bg-slate-800 text-slate-300"
-              }`}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
-      </div>
+        <h2 className="text-lg font-semibold text-slate-100">Live Spatial Preview</h2>
+        <Link 
+          to="/floorplanner" 
+          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold rounded-md shadow-lg hover:shadow-xl transition-all"
+        >
+          Open Full CAD Editor →
+        </Link>
+      </div> 
       <div className="h-[min(360px,calc(100vh-20rem))] overflow-hidden rounded-xl border border-slate-700/50 sm:h-[min(400px,calc(100vh-18rem))] lg:h-[min(480px,calc(100vh-14rem))] xl:h-[min(540px,calc(100vh-12rem))]">
         <Canvas shadows camera={{ position: [7.5, 6.8, 8], fov: 45 }}>
           <ambientLight intensity={0.45} />

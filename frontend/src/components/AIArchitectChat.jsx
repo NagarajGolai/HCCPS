@@ -1,92 +1,117 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Stage, Layer, Text } from 'react-konva';
 
-import { fetchArchitectAdvice } from "../api/proptechApi";
-
-export default function AIArchitectChat({
-  houseData,
-  ecoScore,
-  vastuScore,
-  predictedCostInr,
-}) {
-  const [open, setOpen] = useState(false);
+export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predictedCostInr }) {
+  const [messages, setMessages] = useState([
+    { role: 'ai', content: '🏗️ PropVerse AI Architect online. Share your design thoughts or ask about BOQ!' }
+  ]);
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [advice, setAdvice] = useState("");
-  const [error, setError] = useState("");
+  const messagesEndRef = useRef(null);
 
-  const contextPayload = useMemo(
-    () => ({
-      house_data: houseData,
-      eco_score: ecoScore,
-      vastu_score: vastuScore,
-      predicted_cost_inr: predictedCostInr,
-    }),
-    [houseData, ecoScore, vastuScore, predictedCostInr]
-  );
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  const getAdvice = async () => {
-    setError("");
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const sendMessage = useCallback(async () => {
+    if (!input.trim() || loading) return;
+    
+    const userMsg = { role: 'user', content: input };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
     setLoading(true);
+
     try {
-      const data = await fetchArchitectAdvice(contextPayload);
-      setAdvice(data.advice);
-    } catch (e) {
-      setError(e?.response?.data?.detail || "Unable to fetch architect advice.");
+      const response = await fetch('http://localhost:8000/api/ai-advice/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ house_data: houseData })
+      });
+      
+      if (!response.ok) throw new Error('AI service unavailable');
+      
+      const data = await response.json();
+      const aiMsg = { role: 'ai', content: data.advice || 'Engineering analysis complete. Ready for next query!' };
+      setMessages(prev => [...prev, aiMsg]);
+    } catch (error) {
+      const errorMsg = { role: 'ai', content: `⚠️ Service temporarily offline. ${error.message}` };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
+    }
+  }, [input, houseData]);
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
   return (
-    <div className="pointer-events-none absolute inset-0">
-      <div className="pointer-events-auto absolute bottom-4 right-4 w-80">
-        {!open ? (
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setOpen(true)}
-            className="w-full rounded-xl border border-cyan-400/40 bg-slate-900/85 px-4 py-3 text-left shadow-glow backdrop-blur"
-          >
-            <p className="text-xs uppercase tracking-wider text-cyan-300">Generative Architect</p>
-            <p className="mt-1 text-sm font-semibold text-slate-100">Ask AI about this live floor plan</p>
-          </motion.button>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="rounded-xl border border-cyan-400/35 bg-slate-900/90 p-4 shadow-glow backdrop-blur"
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-cyan-200">AI Virtual Architect</p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded bg-slate-800 px-2 py-1 text-xs text-slate-300"
-              >
-                Close
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Uses strict structural context from your active plan + ML estimate.
-            </p>
-            <button
-              type="button"
-              onClick={getAdvice}
-              disabled={loading}
-              className="mt-3 h-10 w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-sm font-semibold text-white"
-            >
-              {loading ? "Analyzing structure..." : "Generate Engineering Advice"}
-            </button>
-            {error && <p className="mt-3 text-xs text-rose-300">{error}</p>}
-            {advice && (
-              <div className="mt-3 max-h-64 overflow-auto rounded-lg border border-slate-700 bg-slate-950/70 p-3">
-                <pre className="whitespace-pre-wrap text-xs text-slate-200">{advice}</pre>
-              </div>
-            )}
-          </motion.div>
-        )}
+    <motion.div 
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      className="space-y-4 h-[500px] flex flex-col"
+    >
+      <div className="pro-h3 mb-4 border-b border-pro-bg-200 pb-4">
+        🤖 AI Architect Assistant
       </div>
-    </div>
+      
+      <div className="pro-card p-6 flex-1 overflow-hidden rounded-2xl shadow-inner border border-pro-bg-200/50 flex flex-col">
+        <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 max-h-96">
+          {messages.map((msg, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[80%] p-4 rounded-2xl shadow-md ${
+                msg.role === 'user' 
+                  ? 'bg-gradient-to-r from-pro-blue-500 to-pro-purple-500 text-white' 
+                  : 'bg-pro-bg-50 border border-pro-bg-200 text-pro-bg-900'
+              }`}>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+              </div>
+            </motion.div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        
+        <div className="flex gap-3 p-1 bg-pro-bg-50 rounded-2xl border-2 border-pro-bg-200/50">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask about foundation, BOQ, materials, or Vastu..."
+            className="flex-1 bg-transparent border-none outline-none p-4 text-lg placeholder-pro-bg-500 focus:placeholder-transparent"
+            disabled={loading}
+            maxLength={500}
+          />
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={sendMessage}
+            disabled={!input.trim() || loading}
+            className="pro-btn-secondary px-6 py-3.5 font-bold whitespace-nowrap shadow-none hover:shadow-pro-lift disabled:opacity-50 min-w-[80px]"
+          >
+            {loading ? '...' : 'Send'}
+          </motion.button>
+        </div>
+      </div>
+
+      {predictedCostInr && (
+        <div className="pro-metric p-4 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border border-emerald-200/50 rounded-2xl">
+          <p className="text-sm uppercase tracking-wider text-emerald-600 font-bold mb-1">Live Estimate</p>
+          <p className="text-2xl font-black text-emerald-700">₹{(predictedCostInr / 10000000).toLocaleString()} Cr</p>
+        </div>
+      )}
+    </motion.div>
   );
 }

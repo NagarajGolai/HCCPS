@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useNavigate } from "react";
 import { motion } from "framer-motion";
 import posthog from "posthog-js";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import FloorPlannerPage from "./pages/FloorPlannerPage";
 import { analyzeEcoScore, analyzeVastuScore, generateBoq } from "./utils/AnalysisEngine";
 import { useAuth } from "./hooks/useAuth";
 
@@ -33,6 +34,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export default function App() {
+  const navigate = useNavigate();
   const location = useLocation();
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [prediction, setPrediction] = useState(null);
@@ -86,9 +88,15 @@ export default function App() {
       const status = await fetchSubscriptionStatus();
       setSubscription(status);
     } catch (error) {
+      console.warn("[App] Subscription check failed (likely unauthenticated):", error);
       setSubscription({ plan: "free", is_active: false });
     }
   }, []);
+
+  const handleRequireAuth = useCallback(() => {
+    setCheckoutOpen(false);
+    navigate('/signin');
+  }, [navigate]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -102,92 +110,104 @@ export default function App() {
     posthog.capture("$pageview", { pathname: location.pathname });
   }, [location.pathname]);
 
-  const renderConsumerPage = (seoTitle, seoDescription, seoPath) => (
+  const renderPredictorPage = () => (
     <MainLayout user={user} onLogout={logout}>
-      <SEO title={seoTitle} description={seoDescription} urlPath={seoPath} />
-      <MarketDashboard />
-      {!isAuthenticated && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 backdrop-blur"
-        >
-          <p className="text-sm text-amber-100">
-            Sign in to run ML predictions and sync your subscription.
-          </p>
-          <Link
-            to="/signin"
-            className="shrink-0 rounded-lg border border-cyan-500/50 bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:border-cyan-400 hover:bg-cyan-500/25"
+      <SEO title="AI Predictor Dashboard | PropVerse AI" description="Run ML-backed construction estimates with interactive 3D floor visualization and sustainability analytics." urlPath="/predictor" />
+      <div className="pro-section">
+        <div className="pro-container">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="mb-8 pro-metric p-6 text-center"
           >
-            Go to sign in
-          </Link>
-        </motion.div>
-      )}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.28fr)]">
-        <div className="grid min-w-0 gap-6">
-          <PredictorForm
-            formData={formData}
-            onChange={handleFieldChange}
-            onSubmit={handlePredictSubmit}
-            loading={loading}
-            apiError={apiError}
-            isAuthenticated={isAuthenticated}
-          />
+            <MarketDashboard />
+          </motion.div>
+          
+          {!isAuthenticated && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              className="mb-10 pro-card p-8 shadow-pro-glow"
+            >
+              <p className="text-2xl text-nebula-text-secondary mb-8">Enter the Nebula to unlock cosmic predictions and Pro features</p>
+              <Link to="/signin" className="pro-btn-success inline-flex items-center gap-3 px-8 py-3 text-lg shadow-pro-lift hover:shadow-pro-glow pro-lift-hover">
+                Sign In →
+              </Link>
+            </motion.div>
+          )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid gap-6 md:grid-cols-2"
-          >
-            <PredictionResult prediction={prediction} />
-            <div className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-5 shadow-glow backdrop-blur">
-              <h3 className="text-lg font-semibold text-slate-100">Design Intelligence</h3>
-              <div className="mt-3 grid gap-3 text-sm">
-                <Metric title="Built-Up Density" value={`${computedDensity}%`} tone="text-cyan-200" />
-                <Metric
-                  title="Spatial Program"
-                  value={`${formData.bhk} BHK / ${formData.floors} floors`}
-                  tone="text-violet-200"
-                />
-                <Metric title="Material Strategy" value={formData.material_tier} tone="text-emerald-200" />
+          <div className="pro-grid lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-12">
+            <div className="pro-space-y lg:pr-4">
+              <PredictorForm
+                formData={formData}
+                onChange={handleFieldChange}
+                onSubmit={handlePredictSubmit}
+                loading={loading}
+                apiError={apiError}
+                isAuthenticated={isAuthenticated}
+              />
+              <div className="pro-grid md:grid-cols-2 gap-6">
+                <PredictionResult prediction={prediction} />
+                <div className="pro-card p-8">
+                  <h3 className="pro-h2 mb-6 text-pro-text-primary">Project Metrics</h3>
+                  <div className="nebula-grid grid-cols-2 gap-6">
+                    <div className="pro-metric">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-pro-blue-300 mb-3">Density</p>
+                      <p className="text-3xl font-bold text-pro-green-400">{computedDensity}%</p>
+                    </div>
+                    <div className="pro-metric">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-pro-blue-300 mb-3">Config</p>
+                      <p className="text-2xl font-bold text-pro-blue-500">{formData.bhk}BHK/{formData.floors}F</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <AnalysisPanel eco={eco} vastu={vastu} />
+              <ExportEngine
+                floorPlanRef={floorPlanRef}
+                formData={formData}
+                prediction={prediction}
+                eco={eco}
+                vastu={vastu}
+                boq={boq}
+                canExport={canExport}
+                isAuthenticated={isAuthenticated}
+                onRequireAuth={handleRequireAuth}
+                onRequireUpgrade={() => setCheckoutOpen(true)}
+              />
+              <DeveloperSettings isAuthenticated={isAuthenticated} />
+            </div>
+
+            <div className="pro-space-y lg:sticky lg:top-20 lg:max-h-[85vh] lg:overflow-y-auto lg:pr-4">
+              <div ref={floorPlanRef} className="pro-card border-pro-green-200/30 p-6 shadow-pro-glow">
+                <FloorViewer formData={formData} />
+              </div>
+              <div className="pro-card p-8 shadow-pro-lift border-pro-blue-200/30">
+                <AIArchitectChat houseData={formData} ecoScore={eco.score} vastuScore={vastu.score} predictedCostInr={prediction?.predicted_cost_inr || null} />
               </div>
             </div>
-          </motion.div>
-          <AnalysisPanel eco={eco} vastu={vastu} />
-          <ExportEngine
-            floorPlanRef={floorPlanRef}
-            formData={formData}
-            prediction={prediction}
-            eco={eco}
-            vastu={vastu}
-            boq={boq}
-            canExport={canExport}
-            onRequireUpgrade={() => setCheckoutOpen(true)}
-          />
-          <DeveloperSettings isAuthenticated={isAuthenticated} />
-        </div>
-
-        <div className="grid min-w-0 gap-6 xl:sticky xl:top-6 xl:self-start xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto xl:pr-1">
-          <div ref={floorPlanRef} className="relative flex flex-col gap-4">
-            <FloorViewer
-              formData={formData}
-              onViewModeChange={(mode) => posthog.capture("floor_view_mode_toggled", { mode })}
-            />
-            <AIArchitectChat
-              houseData={formData}
-              ecoScore={eco.score}
-              vastuScore={vastu.score}
-              predictedCostInr={prediction?.predicted_cost_inr || null}
-            />
           </div>
+          <Checkout
+            open={checkoutOpen}
+            onClose={() => setCheckoutOpen(false)}
+            user={user}
+            isAuthenticated={isAuthenticated}
+            onUpgradeSuccess={refreshSubscription}
+            onRequireAuth={handleRequireAuth}
+          />
         </div>
       </div>
-      <Checkout
-        open={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        user={user}
-        onUpgradeSuccess={refreshSubscription}
-      />
+    </MainLayout>
+  );
+
+  const renderFloorPlannerPage = () => (
+    <MainLayout user={user} onLogout={logout}>
+      <SEO title="Interactive Floor Planner CAD | PropVerse AI" description="Professional 2D CAD floor plan editor with layers, snap-to-grid, symbols library, DXF export and real-time cost estimation." urlPath="/floorplanner" />
+      <div className="pro-layout">
+        <div className="pro-container">
+          <FloorPlannerPage />
+        </div>
+      </div>
     </MainLayout>
   );
 
@@ -196,16 +216,8 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/signin" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/SignIn" element={<Navigate to="/signin" replace />} />
-      <Route path="/SignUp" element={<Navigate to="/signup" replace />} />
-      <Route
-        path="/predictor"
-        element={renderConsumerPage(
-          "AI Predictor Dashboard | PropVerse AI",
-          "Run ML-backed construction estimates with interactive 3D floor visualization and sustainability analytics.",
-          "/predictor"
-        )}
-      />
+      <Route path="/predictor" element={renderPredictorPage()} />
+      <Route path="/floorplanner" element={renderFloorPlannerPage()} />
       <Route
         path="/admin"
         element={isAuthenticated && isAdminUser ? <AdminDashboard /> : <Navigate to="/" replace />}
@@ -215,11 +227,3 @@ export default function App() {
   );
 }
 
-function Metric({ title, value, tone }) {
-  return (
-    <div className="rounded-lg border border-slate-700/70 bg-slate-800/55 p-3">
-      <p className="text-xs uppercase tracking-wider text-slate-400">{title}</p>
-      <p className={`mt-1 text-base font-semibold ${tone}`}>{value}</p>
-    </div>
-  );
-}

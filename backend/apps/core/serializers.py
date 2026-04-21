@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import CostPrediction, MaterialMarketIndex
+from .models import FloorPlan, CostPrediction, MaterialMarketIndex
 
 User = get_user_model()
 
@@ -59,4 +59,10 @@ class CostPredictionResponseSerializer(serializers.ModelSerializer):
 class MaterialMarketIndexSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialMarketIndex
-        fields = ["city", "material", "price_per_unit", "unit", "updated_at"]
+    fields = ["city", "material", "price_per_unit", "unit", "updated_at"]
+
+
+class FloorPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FloorPlan
+        fields = '__all__'

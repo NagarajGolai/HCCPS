@@ -1,47 +1,75 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 import { createRazorpayOrder, verifyRazorpayPayment } from "../api/proptechApi";
 
 const PRO_PRICE_PAISE = 199900;
 
-export default function Checkout({ open, onClose, user, onUpgradeSuccess }) {
+export default function Checkout({ open, onClose, user, isAuthenticated, onUpgradeSuccess, onRequireAuth }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   if (!open) return null;
 
   const handleUpgrade = async () => {
-    const order = await createRazorpayOrder({ amount_paise: PRO_PRICE_PAISE, plan: "pro" });
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || order.key_id,
-      amount: order.amount_paise,
-      currency: order.currency,
-      name: "PropVerse AI",
-      description: "Pro Tier Subscription",
-      order_id: order.order_id,
-      prefill: {
-        name: user?.name || "",
-        email: user?.email || "",
-      },
-      theme: {
-        color: "#06b6d4",
-      },
-      handler: async (response) => {
-        await verifyRazorpayPayment(response);
-        onUpgradeSuccess();
-        onClose();
-      },
-    };
-
-    if (!window.Razorpay) {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      await new Promise((resolve, reject) => {
-        script.onload = resolve;
-        script.onerror = reject;
-        document.body.appendChild(script);
-      });
+    if (!isAuthenticated) {
+      setError("Please sign in first to upgrade.");
+      onRequireAuth?.();
+      return;
     }
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+
+    try {
+      setLoading(true);
+      setError("");
+      const order = await createRazorpayOrder({ amount_paise: PRO_PRICE_PAISE, plan: "pro" });
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || order.key_id,
+        amount: order.amount_paise,
+        currency: order.currency,
+        name: "PropVerse AI",
+        description: "Pro Tier Subscription",
+        order_id: order.order_id,
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+        },
+        theme: {
+          color: "#06b6d4",
+        },
+        handler: async (response) => {
+          try {
+            await verifyRazorpayPayment(response);
+            onUpgradeSuccess();
+            onClose();
+          } catch (verifyError) {
+            console.error("Payment verification failed:", verifyError);
+            alert("Payment recorded but verification failed. Check subscription status.");
+          }
+        },
+      };
+
+      if (!window.Razorpay) {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.async = true;
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment initiation failed:", error);
+      const errorMsg = error?.response?.status === 401 
+        ? "Authentication required. Please sign in."
+        : error?.response?.data?.detail || "Payment initiation failed. Please try again.";
+      setError(errorMsg);
+      onRequireAuth?.();
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,35 +83,50 @@ export default function Checkout({ open, onClose, user, onUpgradeSuccess }) {
           Upgrade to Pro Tier
         </h3>
         <p className="mt-2 text-sm text-slate-300">
-          Unlock unlimited PDF exports, higher prediction rate limits, and priority analytics
-          throughput.
+          Unlock unlimited PDF exports, higher prediction rate limits, and priority analytics throughput.
         </p>
+        
+        {error && (
+          <div className="mt-4 rounded-lg border border-rose-400/50 bg-rose-900/50 p-3">
+            <p className="text-sm text-rose-200">{error}</p>
+          </div>
+        )}
+        
         <div className="mt-4 rounded-xl border border-slate-700 bg-slate-800/70 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">Monthly Plan</p>
           <p className="mt-1 text-3xl font-extrabold text-cyan-200">INR 1,999</p>
           <ul className="mt-3 space-y-1 text-sm text-slate-300">
-            <li>- 100 predictions/day</li>
-            <li>- Unlimited Master Blueprint exports</li>
-            <li>- Fast-lane AI computation slot</li>
+            <li>• 100 predictions/day</li>
+            <li>• Unlimited Master Blueprint exports</li>
+            <li>• Fast-lane AI computation slot</li>
           </ul>
         </div>
-        <div className="mt-5 flex gap-3">
+        
+        <div className="mt-6 flex flex-col gap-3">
+          {!isAuthenticated && (
+            <p className="text-sm text-amber-200 text-center">
+              🔐 Sign in required for Pro upgrade
+            </p>
+          )}
           <button
             type="button"
             onClick={onClose}
-            className="h-11 flex-1 rounded-lg border border-slate-600 bg-slate-800 font-semibold text-slate-200 transition hover:border-slate-400"
+            disabled={loading}
+            className="h-11 rounded-lg border border-slate-600 bg-slate-800 font-semibold text-slate-200 transition hover:border-slate-400 disabled:opacity-50"
           >
             Not now
           </button>
           <button
             type="button"
             onClick={handleUpgrade}
-            className="h-11 flex-1 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500 font-semibold text-white transition hover:brightness-110"
+            disabled={loading || !isAuthenticated}
+            className="h-11 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-500 to-violet-500 font-semibold text-white transition hover:brightness-110 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed disabled:brightness-100"
           >
-            Pay Securely
+            {loading ? "Loading..." : "Pay Securely"}
           </button>
         </div>
       </motion.div>
     </div>
   );
 }
+

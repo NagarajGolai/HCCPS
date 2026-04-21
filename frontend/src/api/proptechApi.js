@@ -74,3 +74,19 @@ export async function fetchArchitectAdvice(payload) {
   const { data } = await client.post("/llm/architect-advice/", payload);
   return data;
 }
+
+export async function fetchFloorPlans() {
+  const { data } = await client.get("/core/floorplans/");
+  return data;
+}
+
+export async function createFloorPlan(payload) {
+  const { data } = await client.post("/core/floorplans/", payload);
+  return data;
+}
+
+export async function updateFloorPlan(id, payload) {
+  const { data } = await client.put(`/core/floorplans/${id}/`, payload);
+  return data;
+}
+

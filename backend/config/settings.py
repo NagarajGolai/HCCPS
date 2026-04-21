@@ -2,17 +2,15 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-import sentry_sdk
 from dotenv import load_dotenv
-from sentry_sdk.integrations.django import DjangoIntegration
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me-in-production")
-DEBUG = True  # Set True for dev to bypass ALLOWED_HOSTS
-ALLOWED_HOSTS = ["*"]  # Allow all for dev
+DEBUG = True
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -84,11 +82,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS - FIXED for localhost:5173
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = ["authorization", "content-type", "*"]
@@ -116,30 +116,34 @@ SIMPLE_JWT = {
 
 MODEL_ARTIFACT_PATH = BASE_DIR / "ml_engine" / "artifacts" / "cost_predictor.joblib"
 
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_Sg23xS6yGwLKSf")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "ZCnEGpgwXqKil5g2I3V2lFLS")
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 RAZORPAY_PRO_PLAN_AMOUNT_PAISE = int(os.getenv("RAZORPAY_PRO_PLAN_AMOUNT_PAISE", "199900"))
 
-SENTRY_DSN = os.getenv("SENTRY_DSN", "")
-SENTRY_TRACES_SAMPLE_RATE = float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2"))
+SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
 if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration()],
-        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
-        send_default_pii=True,
-    )
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2")),
+            send_default_pii=True,
+        )
+    except:
+        pass
 
-# Email SMTP for real OTP emails
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "codeginger02@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "sqpb nbew dhpu tsdr")
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "codeginger02@gmail.com")
+# TODO: Set secure prod email creds
+# EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = "noreply@propverse.ai"
 
 API_KEY_PEPPER = os.getenv("API_KEY_PEPPER", "change-me-key-pepper")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 

@@ -153,3 +153,23 @@ class MaterialMarketIndexListView(generics.ListAPIView):
     serializer_class = MaterialMarketIndexSerializer
     permission_classes = [permissions.AllowAny]
     queryset = MaterialMarketIndex.objects.all().order_by("city", "material")
+
+
+from rest_framework import viewsets
+from .serializers import FloorPlanSerializer
+from .models import FloorPlan
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+
+class FloorPlanViewSet(viewsets.ModelViewSet):
+    serializer_class = FloorPlanSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return FloorPlan.objects.filter(user=self.request.user)
+        return FloorPlan.objects.filter(is_public=True)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
