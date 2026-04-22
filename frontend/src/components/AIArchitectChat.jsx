@@ -27,10 +27,15 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/ai-advice/', {
+      const response = await fetch('http://127.0.0.1:8000/api/v1/llm/architect-advice/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ house_data: houseData })
+        body: JSON.stringify({ 
+          house_data: houseData,
+          ecoScore: ecoScore,
+          vastuScore: vastuScore,
+          predictedCostInr: predictedCostInr 
+        })
       });
       
       if (!response.ok) throw new Error('AI service unavailable');

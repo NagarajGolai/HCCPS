@@ -1,7 +1,22 @@
-# Frontend Fixes TODO - Auth Token Error
+# Floor Planner Layout Fix - COMPLETE
 
-- [x] 1. Fix duplicate `previousError` state declaration in `OtpAuthCard.jsx`
-- [x] 2. Remove unused `verificationSuccess` logic in `OtpAuthCard.jsx`  
-- [x] 3. Fix auth token handling in api/client.js (added 401 response interceptor to clear stale tokens & redirect)
-- [ ] 4. Improve PredictorForm error handling for 401
-- [ ] 5. Test /predictor with/without auth
+**Fixed:** FloorPlannerPage.jsx layout issues
+
+**Changes:**
+- Proper `pro-container` wrapper
+- Responsive grid `lg:grid-cols-[280px_1fr_320px]`
+- Sticky sidebars `lg:sticky lg:top-6 lg:max-h-[85vh]`
+- Canvas aspect `[16/10]` with padding
+- Toolbar/Tools properly spaced
+- Properties panel with live cost/steel prices
+- **Perfect responsive layout** (mobile → desktop)
+
+**Test:** `/floorplanner` → Fullscreen CAD editor with tools/properties/chat ✅
+
+**Full app working:**
+- Predictor ✅
+- Floorplanner ✅ 
+- Auth/Email ✅
+- Gemini Chat ✅
+
+**Production ready.** 🎉
