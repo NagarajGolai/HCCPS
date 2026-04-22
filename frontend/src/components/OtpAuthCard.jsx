@@ -21,24 +21,6 @@ export default function OtpAuthCard({
   const [step, setStep] = useState("email"); // 'email' | 'otp'
   const [otpSent, setOtpSent] = useState(false);
   const [previousError, setPreviousError] = useState("");
-  const [previousError, setPreviousError] = useState("");
-
-  // Watch for successful verification
-  useEffect(() => {
-    // Check if verification was successful by checking if there's no error and we got a success message
-    // and the loading is complete
-    if (!loading && !otpLoading && !error && message && previousError === "") {
-      // Immediately show success and parent will redirect
-      setVerificationSuccess(true);
-    }
-
-    // Track previous error state
-    if (error) {
-      setPreviousError(error);
-    } else if (!loading && !otpLoading && previousError) {
-      setPreviousError("");
-    }
-  }, [loading, otpLoading, error, message, previousError]);
 
   // Removed auto-submit OTP to prevent self validating without typing
 
