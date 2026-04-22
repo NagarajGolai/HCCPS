@@ -14,6 +14,22 @@ client.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      localStorage.removeItem("propverse_access_token");
+      localStorage.removeItem("propverse_refresh_token");
+      originalRequest._retry = true;
+      window.location.href = '/signin?from=' + encodeURIComponent(window.location.pathname);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default client;
