@@ -69,81 +69,73 @@ export default function LandingPage() {
       />
 
       <div className="pro-section">
-        {/* Hero Section */}
-        <motion.section {...fadeInUp(0)} className="text-center mb-20">
-          <motion.p 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 text-md font-bold uppercase tracking-wider text-pro-blue-400"
-          >
-            Construction Intelligence
-          </motion.p>
-          <motion.h1 
-            {...fadeInUp(0.2)}
-            className="pro-h1 mb-6 leading-tight max-w-4xl mx-auto"
-          >
-            PropVerse AI Platform
-          </motion.h1>
-          <motion.p 
-            {...fadeInUp(0.4)}
-            className="text-xl md:text-2xl text-pro-bg-400 max-w-3xl mx-auto leading-relaxed mb-12"
-          >
-            Professional AI tools for accurate cost prediction, CAD floor planning, live material pricing, and project analytics.
-          </motion.p>
-          <div className="flex flex-col lg:flex-row gap-8 justify-center items-center">
-            <motion.div {...fadeInUp(0.6)}>
-              <Link
-                to="/predictor"
-                className="pro-btn group px-10 py-4 text-xl shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
+        <div className="pro-container">
+          <div className="mb-16 rounded-3xl border border-slate-700/50 bg-gradient-to-b from-slate-900/60 to-slate-950/20 p-8 md:p-12 shadow-pro-soft">
+            {/* Hero Section */}
+            <motion.section {...fadeInUp(0)} className="text-center">
+              <motion.p 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-5 text-xs font-extrabold uppercase tracking-[0.28em] text-sky-300"
               >
-                <span className="transition-all group-hover:translate-x-4 flex items-center gap-4">
-                  Launch Cosmic Estimator →
-                </span>
-              </Link>
-            </motion.div>
-            <motion.div {...fadeInUp(0.8)}>
-              <Link
-                to={isAuthenticated ? "/predictor" : "/signup"}
-                className="pro-btn-secondary px-10 py-4 text-xl font-bold shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
+                Construction Intelligence
+              </motion.p>
+              <motion.h1 
+                {...fadeInUp(0.2)}
+                className="pro-h1 mb-6 leading-tight max-w-4xl mx-auto"
               >
-                {isAuthenticated ? "Nebula Dashboard" : "Enter Free Cosmos"}
-              </Link>
-            </motion.div>
+                PropVerse AI
+              </motion.h1>
+              <motion.p 
+                {...fadeInUp(0.4)}
+                className="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-10"
+              >
+                Accurate cost prediction, CAD floor planning, live material pricing, and analytics—engineered for Indian construction teams.
+              </motion.p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-stretch sm:items-center">
+                <motion.div {...fadeInUp(0.6)} className="w-full sm:w-auto">
+                  <Link
+                    to="/predictor"
+                    className="pro-btn group inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-4 text-base md:text-lg shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
+                  >
+                    Launch Estimator
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
+                  </Link>
+                </motion.div>
+                <motion.div {...fadeInUp(0.8)} className="w-full sm:w-auto">
+                  <Link
+                    to={isAuthenticated ? "/predictor" : "/signup"}
+                    className="pro-btn-secondary inline-flex w-full sm:w-auto items-center justify-center px-8 py-4 text-base md:text-lg shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
+                  >
+                    {isAuthenticated ? "Go to Dashboard" : "Create free account"}
+                  </Link>
+                </motion.div>
+              </div>
+            </motion.section>
           </div>
-        </motion.section>
 
         {/* Hero Metrics */}
-        <motion.section {...fadeInUp(1)} className="mb-24">
-          <div className="pro-grid md:grid-cols-3 gap-8 items-center">
-            <motion.div className="pro-metric">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-pro-green-100/50 to-pro-gold-100/50 flex items-center justify-center shadow-pro-soft">
-                <svg className="w-10 h-10 text-pro-green-600" fill="currentColor" viewBox="0 0 80 80">
-                  <path d="M20 20h40v10H20zM25 35h30v10H25zM15 50h50v10H15z"/>
-                  <circle cx="25" cy="27" r="3"/>
-                  <circle cx="55" cy="42" r="3"/>
-                </svg>
-              </div>
-              <h3 className="text-4xl font-bold text-white mb-3">₹3.87 Cr</h3>
-              <p className="text-gray-300 font-semibold text-base">Live Bangalore Rates</p>
-              <p className="text-gray-400 text-xs">4BHK • 2500sqft • Premium</p>
-            </motion.div>
-            <div className="md:col-span-2 pro-grid md:grid-cols-2 gap-6">
-              <motion.div className="pro-metric">
-                <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Steel TMT</p>
-                <p className="text-3xl font-bold text-emerald-400">₹72/kg <span className="text-sm font-medium text-yellow-400">+1.8%</span></p>
-              </motion.div>
-              <motion.div className="pro-metric">
-                <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">OPC Cement</p>
-                <p className="text-3xl font-bold text-emerald-400">₹398/bag</p>
-              </motion.div>
+        <motion.section {...fadeInUp(1)} className="mb-20">
+          <div className="pro-grid gap-6 md:grid-cols-3">
+            <div className="pro-metric">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold mb-2">Sample estimate</p>
+              <p className="text-3xl font-extrabold text-slate-100">₹3.87 Cr</p>
+              <p className="mt-2 text-sm text-slate-300">Bengaluru • 4BHK • 2500 sqft</p>
+            </div>
+            <div className="pro-metric">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold mb-2">Market index</p>
+              <p className="text-3xl font-extrabold text-emerald-300">Steel: ₹72/kg</p>
+              <p className="mt-2 text-sm text-slate-300">Updated daily across cities</p>
+            </div>
+            <div className="pro-metric">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold mb-2">Floor studio</p>
+              <p className="text-3xl font-extrabold text-sky-200">2D/3D</p>
+              <p className="mt-2 text-sm text-slate-300">Plan, export, and share</p>
             </div>
           </div>
-          <motion.p 
-            {...fadeInUp(1.2)}
-            className="text-center mt-12 text-lg text-pro-bg-600 max-w-3xl mx-auto"
-          >
-            Updates instantly across 120+ Indian markets. Engineered for precision.
-          </motion.p>
+          <p className="mt-8 text-center text-base text-slate-300">
+            Built for fast decisions: estimator + materials + floor planning.
+          </p>
         </motion.section>
 
         {/* Features */}
@@ -152,10 +144,10 @@ export default function LandingPage() {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="mb-24 py-16"
+          className="mb-20"
         >
-          <motion.h2 {...fadeInUp(0)} className="pro-h2 text-center mb-16 max-w-4xl mx-auto">
-            Complete Engineering Platform
+          <motion.h2 {...fadeInUp(0)} className="pro-h2 text-center mb-10 max-w-4xl mx-auto">
+            Complete platform for construction teams
           </motion.h2>
           <div className="pro-grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, i) => (
@@ -163,13 +155,13 @@ export default function LandingPage() {
                 key={feature.title}
                 {...fadeInUp(i * 0.1)}
                 whileHover={{ y: -8 }}
-                className="pro-card p-8 cursor-pointer pro-lift-hover group border-pro-blue-200/30 hover:border-pro-green-400/50 hover:shadow-pro-lift hover:scale-[1.02]"
+                className="pro-card p-7 cursor-pointer pro-lift-hover group hover:shadow-pro-lift hover:scale-[1.01]"
               >
-                <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-pro-blue-100/50 to-pro-blue-200/50 flex items-center justify-center shadow-pro-soft group-hover:shadow-pro-lift group-hover:scale-105 transition-all">
+                <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-slate-900/40 border border-slate-700/60 flex items-center justify-center shadow-pro-soft group-hover:shadow-pro-lift group-hover:scale-105 transition-all">
                   <span className="text-3xl">{feature.icon}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-6 group-hover:text-pro-blue-400 transition-colors">{feature.title}</h3>
-                <p className="text-gray-300 leading-relaxed text-lg">{feature.body}</p>
+                <h3 className="text-xl font-bold text-slate-100 mb-3 group-hover:text-sky-300 transition-colors">{feature.title}</h3>
+                <p className="text-slate-300 leading-relaxed text-base">{feature.body}</p>
               </motion.div>
             ))}
           </div>
@@ -180,29 +172,29 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="pro-card py-20 text-center shadow-pro-lift"
+          className="pro-card py-16 text-center shadow-pro-lift"
         >
           <motion.h2 
             initial={{ scale: 0.9 }}
             whileInView={{ scale: 1 }}
-            className="pro-h2 mb-8 max-w-3xl mx-auto text-white"
+            className="pro-h2 mb-6 max-w-3xl mx-auto"
           >
             Ready for Precision Engineering?
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-base md:text-lg text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed"
           >
             Join engineering teams delivering precise construction intelligence.
           </motion.p>
-          <div className="flex flex-col xl:flex-row gap-12 justify-center items-center max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-5xl mx-auto">
             <Link
               to="/predictor"
-              className="pro-btn w-full xl:w-auto px-12 py-5 text-xl shadow-pro-lift hover:shadow-pro-glow pro-lift-hover whitespace-nowrap"
+              className="pro-btn w-full sm:w-auto px-10 py-4 text-base md:text-lg shadow-pro-lift hover:shadow-pro-glow pro-lift-hover whitespace-nowrap"
             >
               <span className="inline-flex items-center gap-4">
-                Cosmic Cost Estimate
+                Run a cost estimate
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -210,7 +202,7 @@ export default function LandingPage() {
             </Link>
             <Link
               to="/signup"
-              className="pro-btn-success w-full xl:w-auto px-12 py-5 text-xl font-bold shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
+              className="pro-btn-success w-full sm:w-auto px-10 py-4 text-base md:text-lg font-extrabold shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
             >
               Get Started Free
             </Link>
@@ -219,41 +211,25 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="mt-12 text-lg text-gray-400"
+            className="mt-10 text-sm text-slate-400"
           >
-            <Link to="/signin" className="font-semibold text-pro-blue-400 hover:text-pro-blue-300 underline-offset-4 transition-all">Already registered? Sign in</Link>
+            <Link to="/signin" className="font-semibold text-sky-300 hover:text-sky-200 underline underline-offset-4 transition-all">
+              Already registered? Sign in
+            </Link>
           </motion.p>
         </motion.section>
 
         {/* Footer */}
-        <footer className="mt-20 pt-12 pb-12 border-t border-pro-bg-600/30 text-center bg-pro-bg-900/30">
-          <div className="pro-container">
-            <motion.h3 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="pro-h2 mb-6 max-w-2xl mx-auto text-white"
-            >
-              PropVerse AI
-            </motion.h3>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-gray-400 mb-8 leading-relaxed max-w-2xl mx-auto text-base"
-            >
-              Professional AI platform for construction intelligence.
-            </motion.p>
-            <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-300 mb-8">
-              <Link to="/predictor" className="pro-lift-hover px-4 py-2 rounded-xl text-gray-200 hover:text-pro-blue-400 transition-all hover:bg-pro-bg-800/50 px-6">Cost Estimator</Link>
-              <Link to="/floorplanner" className="pro-lift-hover px-4 py-2 rounded-xl text-gray-200 hover:text-pro-blue-400 transition-all hover:bg-pro-bg-800/50 px-6">Floor Planner</Link>
-              <Link to="/pricing" className="nebula-lift-hover px-8 py-4 rounded-nebula-xl text-nebula-text-primary hover:text-nebula-cyan transition-all hover:bg-nebula-purple/10 shadow-nebula-float">Pricing</Link>
-              <Link to="/contact" className="nebula-lift-hover px-8 py-4 rounded-nebula-xl text-nebula-text-primary hover:text-nebula-cyan transition-all hover:bg-nebula-purple/10 shadow-nebula-float">Contact</Link>
-            </div>
-            <p className="text-sm text-nebula-text-secondary/70">
-              © {new Date().getFullYear()} PropVerse Nebula • Engineered for cosmic construction
-            </p>
-          </div>
+        <footer className="mt-16 pt-10 pb-10 border-t border-slate-800/60 text-center">
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-sm text-slate-400"
+          >
+            © {new Date().getFullYear()} PropVerse AI • Construction intelligence platform
+          </motion.p>
         </footer>
+        </div>
       </div>
     </div>
   );

@@ -27,6 +27,22 @@ body {
   scroll-padding-top: 80px;
 }
 
+.pro-layout {
+  min-height: 100vh;
+}
+
+.pro-section {
+  padding: 4rem 0;
+}
+
+.pro-grid {
+  display: grid;
+}
+
+.pro-space-y > * + * {
+  margin-top: 1.25rem;
+}
+
 .pro-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -40,6 +56,31 @@ body {
   padding: 2rem;
   backdrop-filter: blur(20px);
   box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-metric {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  padding: 1.25rem;
+  box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-h2 {
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--pro-text-primary);
+}
+
+.pro-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.85);
 }
 
 .pro-btn {
@@ -59,19 +100,89 @@ body {
   box-shadow: var(--pro-shadow-lift);
 }
 
+.pro-btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--pro-text-primary);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 16px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pro-shadow-lift);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+
+.pro-btn-success {
+  background: linear-gradient(135deg, var(--pro-green-primary), #16a34a);
+  color: #04120a;
+  border: none;
+  border-radius: 16px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--pro-shadow-soft);
+}
+
+.pro-btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pro-shadow-lift);
+}
+
 .pro-input {
+  width: 100%;
   background: rgba(255,255,255,0.08);
   border: 1px solid var(--pro-border-subtle);
   border-radius: 16px;
   padding: 0.875rem 1.25rem;
   color: var(--pro-text-primary);
   transition: all 0.3s ease;
+  caret-color: var(--pro-text-primary);
+  color-scheme: dark;
 }
 
 .pro-input:focus {
   outline: none;
   border-color: var(--pro-blue-primary);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.pro-input::placeholder {
+  color: rgba(203, 213, 225, 0.55);
+}
+
+/* Fix unreadable text on browser autofill (white-on-white, etc.) */
+input.pro-input:-webkit-autofill,
+textarea.pro-input:-webkit-autofill,
+select.pro-input:-webkit-autofill {
+  -webkit-text-fill-color: var(--pro-text-primary);
+  caret-color: var(--pro-text-primary);
+  transition: background-color 9999s ease-in-out 0s;
+  box-shadow: 0 0 0px 1000px rgba(15, 23, 42, 0.8) inset;
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+select.pro-input option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.shadow-glow {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(34, 211, 238, 0.12);
+}
+
+.pro-lift-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.pro-lift-hover:hover {
+  transform: translateY(-2px);
 }
 
 .pro-h1 {

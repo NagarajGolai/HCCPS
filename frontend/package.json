@@ -17,7 +17,7 @@
     "framer-motion": "^11.18.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
-    "konva": "^10.2.5",
+    "konva": "^9.3.22",
     "lucide-react": "^1.8.0",
     "posthog-js": "^1.369.3",
     "react": "^18.3.1",

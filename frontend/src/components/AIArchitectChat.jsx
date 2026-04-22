@@ -59,11 +59,11 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
       animate={{ opacity: 1, height: 'auto' }}
       className="space-y-4 h-[500px] flex flex-col"
     >
-      <div className="pro-h3 mb-4 border-b border-pro-bg-200 pb-4">
+      <div className="text-lg font-extrabold mb-4 border-b border-slate-800 pb-4 text-slate-100">
         🤖 AI Architect Assistant
       </div>
       
-      <div className="pro-card p-6 flex-1 overflow-hidden rounded-2xl shadow-inner border border-pro-bg-200/50 flex flex-col">
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-5 flex-1 overflow-hidden shadow-pro-soft flex flex-col">
         <div className="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 max-h-96">
           {messages.map((msg, idx) => (
             <motion.div
@@ -74,8 +74,8 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
             >
               <div className={`max-w-[80%] p-4 rounded-2xl shadow-md ${
                 msg.role === 'user' 
-                  ? 'bg-gradient-to-r from-pro-blue-500 to-pro-purple-500 text-white' 
-                  : 'bg-pro-bg-50 border border-pro-bg-200 text-pro-bg-900'
+                  ? 'bg-gradient-to-r from-sky-500 to-violet-500 text-white' 
+                  : 'bg-slate-900/70 border border-slate-800 text-slate-100'
               }`}>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
               </div>
@@ -84,13 +84,13 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
           <div ref={messagesEndRef} />
         </div>
         
-        <div className="flex gap-3 p-1 bg-pro-bg-50 rounded-2xl border-2 border-pro-bg-200/50">
+        <div className="flex gap-3 p-1 bg-slate-950/40 rounded-2xl border border-slate-800">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask about foundation, BOQ, materials, or Vastu..."
-            className="flex-1 bg-transparent border-none outline-none p-4 text-lg placeholder-pro-bg-500 focus:placeholder-transparent"
+            className="flex-1 bg-transparent border-none outline-none p-4 text-base text-slate-100 placeholder-slate-500 focus:placeholder-transparent"
             disabled={loading}
             maxLength={500}
           />
