@@ -82,8 +82,8 @@ def generate_dataset(n_samples: int = 20000) -> pd.DataFrame:
         material_factor = MATERIAL_MULTIPLIER[material]
         soil_factor = SOIL_MULTIPLIER[soil]
         green_factor = GREEN_CERT_MULTIPLIER[green_cert]
-        floors_factor = 1 + (floors - 1) * 0.055
-        complexity_factor = 1 + (bhk - 2) * 0.03
+        floors_factor = 1 + (floors - 1) * 0.12
+        complexity_factor = 1 + (bhk - 2) * 0.08
 
         raw_cost = (
             builtup_area
@@ -198,5 +198,5 @@ def train_and_serialize(df: pd.DataFrame) -> None:
 
 
 if __name__ == "__main__":
-    data = generate_dataset(n_samples=6500)
+    data = generate_dataset(n_samples=25000)
     train_and_serialize(data)

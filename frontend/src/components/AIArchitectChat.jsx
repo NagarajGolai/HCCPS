@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Stage, Layer, Text } from 'react-konva';
+import client from '../api/client';
 
 export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predictedCostInr }) {
   const [messages, setMessages] = useState([
@@ -27,20 +28,14 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
     setLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/llm/architect-advice/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          house_data: houseData,
-          ecoScore: ecoScore,
-          vastuScore: vastuScore,
-          predictedCostInr: predictedCostInr 
-        })
+      const { data } = await client.post('/llm/architect-advice/', { 
+        house_data: houseData,
+        ecoScore: ecoScore,
+        vastuScore: vastuScore,
+        predictedCostInr: predictedCostInr,
+        user_query: input
       });
       
-      if (!response.ok) throw new Error('AI service unavailable');
-      
-      const data = await response.json();
       const aiMsg = { role: 'ai', content: data.advice || 'Engineering analysis complete. Ready for next query!' };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
@@ -86,6 +81,24 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
               </div>
             </motion.div>
           ))}
+          
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex justify-start"
+            >
+              <div className="bg-slate-900/40 border border-slate-800/50 p-4 rounded-2xl flex items-center gap-3">
+                <div className="flex gap-1">
+                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0 }} className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                  <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                </div>
+                <p className="text-xs font-medium text-slate-400">Architect is analyzing...</p>
+              </div>
+            </motion.div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
         

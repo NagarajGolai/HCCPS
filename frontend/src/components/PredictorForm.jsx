@@ -92,8 +92,8 @@ export default function PredictorForm({
             Rooms & Structure
           </label>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <InputField label="BHK" name="bhk" value={formData.bhk} min={1} max={10} blocked={blocked} />
-            <InputField label="Floors" name="floors" value={formData.floors} min={1} max={10} blocked={blocked} />
+            <InputField label="BHK" name="bhk" value={formData.bhk} min={1} max={10} blocked={blocked} onChange={onChange} />
+            <InputField label="Floors" name="floors" value={formData.floors} min={1} max={10} blocked={blocked} onChange={onChange} />
             <div>
               <label className="pro-label">
                 Soil Type

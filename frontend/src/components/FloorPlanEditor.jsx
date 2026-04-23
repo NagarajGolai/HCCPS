@@ -1,244 +1,237 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Line, Rect, Transformer, Text, Group } from 'react-konva';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Stage, Layer, Line, Rect, Transformer, Text, Group, Circle, Path } from 'react-konva';
 
 const GRID_SIZE = 20;
 const MAJOR_GRID = 100;
+const SCALE_FACTOR = 4;
 
-export default function FloorPlanEditor({ formData, onUpdate, activeTool = 'select', setArea }) {
-  const [elements, setElements] = useState([
-    { id: 'room1', x: 200, y: 140, width: 240, height: 180, type: 'room', name: 'Primary Suite' },
-  ]);
-  const [selectedId, setSelectedId] = useState(null);
+const THEME = {
+  CANVAS_BG: '#0f172a',
+  GRID_MINOR: 'rgba(255, 255, 255, 0.05)',
+  GRID_MAJOR: 'rgba(255, 255, 255, 0.1)',
+  WALL_STROKE: '#e2e8f0',
+  WALL_ACTIVE: '#fbbf24',
+  ROOM_FILL: 'rgba(56, 189, 248, 0.1)',
+  ROOM_STROKE: '#38bdf8',
+  GOLD: '#fbbf24',
+  TEXT_PRIMARY: '#f8fafc',
+  TEXT_SECONDARY: '#94a3b8',
+};
+
+const SYMBOLS = {
+  sofa: "M10,30 L90,30 L90,70 L80,70 L80,90 L20,90 L20,70 L10,70 Z M20,30 L20,10 L80,10 L80,30",
+  bed: "M10,10 L90,10 L90,90 L10,90 Z M10,10 L10,30 L90,30 L90,10 Z M20,40 L45,40 L45,20 L20,20 Z M55,40 L80,40 L80,20 L55,20 Z",
+  door: "M0,100 L0,0 A100,100 0 0,1 100,100",
+  window: "M0,0 L100,0 L100,20 L0,20 Z M50,0 L50,20",
+};
+
+export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'select', setArea, zoom = 1, selectedId, setSelectedId }) {
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [tempPoints, setTempPoints] = useState([]);
+  const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [cursor, setCursor] = useState('default');
+  
   const stageRef = useRef();
   const trRef = useRef();
+  const containerRef = useRef();
 
-  // Attach transformer
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight
+        });
+      }
+    };
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  useEffect(() => {
+    const totalSqFt = elements.reduce((acc, el) => {
+      if (el.type === 'room') return acc + (el.width / SCALE_FACTOR) * (el.height / SCALE_FACTOR);
+      return acc;
+    }, 0);
+    setArea?.(Math.round(totalSqFt));
+  }, [elements, setArea]);
+
   useEffect(() => {
     if (selectedId && trRef.current) {
-      const stage = stageRef.current;
-      const selectedNode = stage.findOne('#' + selectedId);
-      if (selectedNode) {
-        trRef.current.nodes([selectedNode]);
+      const node = stageRef.current.findOne('#' + selectedId);
+      if (node) {
+        trRef.current.nodes([node]);
         trRef.current.getLayer().batchDraw();
       }
     }
-  }, [selectedId]);
+  }, [selectedId, elements]);
 
-  // Calculate total area
+  // Handle cursor logic
   useEffect(() => {
-    const totalArea = elements.reduce((acc, el) => {
-      if (el.type === 'room') {
-        const area = (el.width / 4) * (el.height / 4);
-        return acc + area;
-      }
-      return acc;
-    }, 0);
-    setArea?.(Math.round(totalArea));
-  }, [elements, setArea]);
+    if (activeTool === 'select') setCursor('grab');
+    else if (activeTool === 'wall' || activeTool === 'room') setCursor('crosshair');
+    else setCursor('default');
+  }, [activeTool]);
 
-  const handleStageClick = (e) => {
-    if (e.target === e.target.getStage()) {
+  const getSnappedPos = useCallback((pos) => ({
+    x: Math.round(pos.x / GRID_SIZE) * GRID_SIZE,
+    y: Math.round(pos.y / GRID_SIZE) * GRID_SIZE
+  }), []);
+
+  const handleMouseDown = (e) => {
+    const stage = stageRef.current;
+    const pos = getSnappedPos(stage.getRelativePointerPosition());
+    
+    if (activeTool === 'wall') {
+      setIsDrawing(true);
+      setTempPoints([pos.x, pos.y, pos.x, pos.y]);
       setSelectedId(null);
-      if (activeTool !== 'select') {
-        const pos = e.target.getStage().getPointerPosition();
-        const x = Math.round(pos.x / GRID_SIZE) * GRID_SIZE;
-        const y = Math.round(pos.y / GRID_SIZE) * GRID_SIZE;
-        
+    } else if (e.target === stage) {
+      setSelectedId(null);
+      if (activeTool === 'select') {
+        setCursor('grabbing');
+      } else if (activeTool !== 'wall') {
         const newEl = {
           id: `${activeTool}-${Date.now()}`,
-          x,
-          y,
-          width: activeTool === 'room' ? 120 : (activeTool === 'wall' ? 120 : 40),
-          height: activeTool === 'room' ? 120 : (activeTool === 'wall' ? 8 : 20),
+          x: pos.x, y: pos.y,
+          width: activeTool === 'room' ? 200 : 80,
+          height: activeTool === 'room' ? 160 : 60,
           type: activeTool,
-          name: activeTool.charAt(0).toUpperCase() + activeTool.slice(1),
+          name: activeTool.toUpperCase(),
+          rotation: 0,
         };
-        setElements([...elements, newEl]);
+        onUpdate([...elements, newEl]);
+        setSelectedId(newEl.id);
       }
-      return;
     }
-    const id = e.target.id();
-    if (id) setSelectedId(id);
   };
 
-  const getToolColors = (type, isSelected) => {
-    if (isSelected) return { fill: '#3b82f622', stroke: '#3b82f6', strokeWidth: 2 };
-    switch (type) {
-      case 'room': return { fill: '#eff6ff', stroke: '#3b82f6', strokeWidth: 1.5 };
-      case 'wall': return { fill: '#1e293b', stroke: '#0f172a', strokeWidth: 1 };
-      case 'door': return { fill: '#fffbeb', stroke: '#d97706', strokeWidth: 1 };
-      case 'window': return { fill: '#f0f9ff', stroke: '#0ea5e9', strokeWidth: 1 };
-      case 'furniture': return { fill: '#f8fafc', stroke: '#94a3b8', strokeWidth: 1 };
-      default: return { fill: '#ffffff', stroke: '#cbd5e1', strokeWidth: 1 };
+  const handleMouseMove = () => {
+    const stage = stageRef.current;
+    const pos = getSnappedPos(stage.getRelativePointerPosition());
+
+    if (isDrawing && activeTool === 'wall') {
+      const [startX, startY] = tempPoints;
+      let endX = pos.x;
+      let endY = pos.y;
+      const dx = Math.abs(endX - startX);
+      const dy = Math.abs(endY - startY);
+      if (dx > dy * 1.5) endY = startY;
+      else if (dy > dx * 1.5) endX = startX;
+      setTempPoints([startX, startY, endX, endY]);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (activeTool === 'select') setCursor('grab');
+    
+    if (isDrawing && activeTool === 'wall') {
+      const [x1, y1, x2, y2] = tempPoints;
+      if (x1 !== x2 || y1 !== y2) {
+        const newWall = { 
+          id: `wall-${Date.now()}`, 
+          x: x1, y: y1, 
+          points: [0, 0, x2 - x1, y2 - y1], 
+          type: 'wall', 
+          name: 'WALL', 
+          rotation: 0,
+          width: Math.abs(x2 - x1) || 1,
+          height: Math.abs(y2 - y1) || 1,
+        };
+        onUpdate([...elements, newWall]);
+      }
+      setIsDrawing(false);
+      setTempPoints([]);
     }
   };
 
   const updateElement = (id, attrs) => {
-    const newElements = elements.map((el) => {
-      if (el.id === id) {
-        const snappedAttrs = { ...attrs };
-        if (attrs.x !== undefined) snappedAttrs.x = Math.round(attrs.x / GRID_SIZE) * GRID_SIZE;
-        if (attrs.y !== undefined) snappedAttrs.y = Math.round(attrs.y / GRID_SIZE) * GRID_SIZE;
-        if (attrs.width !== undefined) snappedAttrs.width = Math.round(attrs.width / GRID_SIZE) * GRID_SIZE;
-        if (attrs.height !== undefined) snappedAttrs.height = Math.round(attrs.height / GRID_SIZE) * GRID_SIZE;
-        return { ...el, ...snappedAttrs };
-      }
-      return el;
-    });
-    setElements(newElements);
-    onUpdate?.(newElements);
-  };
-
-  const handleDelete = (id) => {
-    setElements(elements.filter(el => el.id !== id));
-    setSelectedId(null);
+    const updated = elements.map(el => el.id === id ? { ...el, ...attrs } : el);
+    onUpdate(updated);
   };
 
   return (
-    <div className="relative w-full h-full bg-slate-50 overflow-hidden">
-      {/* HUD Overlay */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">CAD Interactive Canvas</span>
-        </div>
-        <div className="text-[10px] font-mono text-slate-400">
-          Scale: 4px = 1' | {elements.length} Elements | Tool: {activeTool.toUpperCase()}
-        </div>
-      </div>
-
-      <div className="absolute top-4 right-4 z-10 pointer-events-auto flex gap-2">
-        {selectedId && (
-          <>
-            <button 
-              onClick={() => setSelectedId(null)}
-              className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded shadow-sm hover:bg-slate-50 transition-all"
-            >
-              Deselect
-            </button>
-            <button 
-              onClick={() => handleDelete(selectedId)}
-              className="px-3 py-1.5 bg-red-50 border border-red-100 text-red-600 text-[10px] font-bold rounded shadow-sm hover:bg-red-500 hover:text-white transition-all"
-            >
-              Delete
-            </button>
-          </>
-        )}
-        <button 
-          onClick={() => window.confirm("Clear all elements?") && setElements([])}
-          className="px-3 py-1.5 bg-white border border-slate-200 text-slate-400 text-[10px] font-bold rounded shadow-sm hover:text-slate-600 transition-all"
-        >
-          Clear Canvas
-        </button>
-      </div>
-
+    <div ref={containerRef} className="w-full h-full bg-[#0f172a] relative" style={{ cursor }}>
       <Stage
         ref={stageRef}
-        width={800}
-        height={600}
-        onClick={handleStageClick}
-        className="bg-white cursor-crosshair"
+        width={dimensions.width}
+        height={dimensions.height}
+        scaleX={zoom}
+        scaleY={zoom}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        draggable={activeTool === 'select' && !selectedId}
+        onDragStart={() => setCursor('grabbing')}
+        onDragEnd={() => setCursor('grab')}
       >
         <Layer>
-          {/* Professional Grid */}
-          {Array.from({ length: 800 / GRID_SIZE }).map((_, i) => (
-            <Line
-              key={`v-${i}`}
-              points={[i * GRID_SIZE, 0, i * GRID_SIZE, 600]}
-              stroke={i * GRID_SIZE % MAJOR_GRID === 0 ? "#e2e8f0" : "#f1f5f9"}
-              strokeWidth={i * GRID_SIZE % MAJOR_GRID === 0 ? 1 : 0.5}
-            />
+          {Array.from({ length: 400 }).map((_, i) => (
+            <Line key={`v-${i}`} points={[i * GRID_SIZE, -2000, i * GRID_SIZE, 4000]} stroke={i * GRID_SIZE % MAJOR_GRID === 0 ? THEME.GRID_MAJOR : THEME.GRID_MINOR} strokeWidth={0.5} listening={false} />
           ))}
-          {Array.from({ length: 600 / GRID_SIZE }).map((_, i) => (
-            <Line
-              key={`h-${i}`}
-              points={[0, i * GRID_SIZE, 800, i * GRID_SIZE]}
-              stroke={i * GRID_SIZE % MAJOR_GRID === 0 ? "#e2e8f0" : "#f1f5f9"}
-              strokeWidth={i * GRID_SIZE % MAJOR_GRID === 0 ? 1 : 0.5}
-            />
+          {Array.from({ length: 400 }).map((_, i) => (
+            <Line key={`h-${i}`} points={[-2000, i * GRID_SIZE, 4000, i * GRID_SIZE]} stroke={i * GRID_SIZE % MAJOR_GRID === 0 ? THEME.GRID_MAJOR : THEME.GRID_MINOR} strokeWidth={0.5} listening={false} />
           ))}
 
           {elements.map((el) => {
             const isSelected = selectedId === el.id;
-            const styles = getToolColors(el.type, isSelected);
             return (
-              <Group key={el.id}>
-                <Rect
-                  id={el.id}
-                  x={el.x}
-                  y={el.y}
-                  width={el.width}
-                  height={el.height}
-                  fill={styles.fill}
-                  stroke={styles.stroke}
-                  strokeWidth={styles.strokeWidth}
-                  cornerRadius={el.type === 'room' ? 2 : 0}
-                  draggable={activeTool === 'select'}
-                  onDragEnd={(e) => updateElement(el.id, { x: e.target.x(), y: e.target.y() })}
-                  onTransformEnd={(e) => {
-                    const node = e.target;
-                    updateElement(el.id, {
-                      x: node.x(),
-                      y: node.y(),
-                      width: Math.max(10, node.width() * node.scaleX()),
-                      height: Math.max(10, node.height() * node.scaleY()),
-                    });
-                    node.scaleX(1);
-                    node.scaleY(1);
-                  }}
-                />
-                
-                <Text 
-                  text={el.name}
-                  x={el.x + 8}
-                  y={el.y + 8}
-                  fontSize={10}
-                  fontFamily="Inter"
-                  fontStyle="bold"
-                  fill={isSelected ? "#2563eb" : "#475569"}
-                  listening={false}
-                />
-                
-                {el.type === 'room' && (
+              <Group 
+                key={el.id} id={el.id} x={el.x} y={el.y} width={el.width} height={el.height} rotation={el.rotation}
+                draggable={activeTool === 'select'}
+                onClick={(e) => {
+                  e.cancelBubble = true;
+                  if (activeTool === 'select') setSelectedId(el.id);
+                }}
+                onMouseEnter={() => activeTool === 'select' && setCursor('pointer')}
+                onMouseLeave={() => activeTool === 'select' && setCursor('grab')}
+                onDragEnd={(e) => {
+                  const pos = getSnappedPos({ x: e.target.x(), y: e.target.y() });
+                  updateElement(el.id, { x: pos.x, y: pos.y });
+                }}
+                onTransformEnd={(e) => {
+                  const node = e.target;
+                  const scaleX = node.scaleX();
+                  const scaleY = node.scaleY();
+                  node.scaleX(1); node.scaleY(1);
+                  const newW = Math.max(20, Math.round((el.width * scaleX) / GRID_SIZE) * GRID_SIZE);
+                  const newH = Math.max(20, Math.round((el.height * scaleY) / GRID_SIZE) * GRID_SIZE);
+                  updateElement(el.id, {
+                    x: node.x(), y: node.y(),
+                    width: newW, height: newH,
+                    rotation: node.rotation(),
+                  });
+                }}
+              >
+                {el.type === 'wall' ? (
+                  <Line points={el.points} stroke={isSelected ? THEME.WALL_ACTIVE : THEME.WALL_STROKE} strokeWidth={8} lineCap="square" />
+                ) : el.type === 'room' ? (
+                  <Rect width={el.width} height={el.height} fill={THEME.ROOM_FILL} stroke={isSelected ? THEME.GOLD : THEME.ROOM_STROKE} strokeWidth={2} cornerRadius={2} />
+                ) : (
                   <Group>
-                    <Text 
-                      text={`${Math.round((el.width / 4) * (el.height / 4))} SQFT`}
-                      x={el.x + 8}
-                      y={el.y + el.height - 18}
-                      fontSize={9}
-                      fontFamily="monospace"
-                      fill="#64748b"
-                      listening={false}
-                    />
-                    <Text 
-                      text={`${el.width/4}' x ${el.height/4}'`}
-                      x={el.x + el.width/2 - 20}
-                      y={el.y + el.height/2 - 5}
-                      fontSize={8}
-                      fontFamily="monospace"
-                      fill="#94a3b8"
-                      listening={false}
-                      opacity={isSelected ? 1 : 0.4}
-                    />
+                    {SYMBOLS[el.type] ? (
+                      <Path data={SYMBOLS[el.type]} fill="rgba(255,255,255,0.08)" stroke={isSelected ? THEME.GOLD : THEME.TEXT_SECONDARY} strokeWidth={2} scaleX={el.width / 100} scaleY={el.height / 100} />
+                    ) : (
+                      <Rect width={el.width} height={el.height} fill="rgba(255,255,255,0.05)" stroke={isSelected ? THEME.GOLD : THEME.TEXT_SECONDARY} strokeWidth={1} />
+                    )}
                   </Group>
                 )}
+                <Text text={el.name} x={5} y={-15} fontSize={10} fontStyle="bold" fill={isSelected ? THEME.GOLD : THEME.TEXT_PRIMARY} />
               </Group>
             );
           })}
 
+          {isDrawing && (
+            <Line points={tempPoints} stroke={THEME.GOLD} strokeWidth={6} dash={[10, 5]} opacity={0.6} />
+          )}
+
           {selectedId && (
             <Transformer
               ref={trRef}
-              anchorFill="#3b82f6"
-              anchorStroke="#ffffff"
-              anchorSize={6}
-              borderStroke="#3b82f6"
-              rotateEnabled={false}
-              boundBoxFunc={(oldBox, newBox) => {
-                if (newBox.width < 10 || newBox.height < 10) return oldBox;
-                return newBox;
-              }}
+              anchorFill={THEME.GOLD} anchorStroke="#ffffff" anchorSize={10} anchorCornerRadius={2}
+              borderStroke={THEME.GOLD} borderDash={[5, 2]}
+              keepRatio={false}
             />
           )}
         </Layer>

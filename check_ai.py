@@ -1,10 +1,11 @@
 import google.generativeai as genai
 import os
+from dotenv import load_dotenv
 
-# Your current key
-API_KEY = os.getenv("GEMINI_API_KEY")
+load_dotenv()
 
-genai.configure(api_key=API_KEY)
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 
 print("--- PROVERSE AI DIAGNOSTIC ---")
 try:

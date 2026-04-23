@@ -6,9 +6,10 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 
 # Professional Configuration: 
-# Move the key to your .env file and access via settings.
-# NEVER hardcode keys in production scripts.
-genai.configure(api_key=settings.GEMINI_API_KEY)
+# Configure Gemini - handle potential missing key gracefully
+GEMINI_KEY = getattr(settings, "GEMINI_API_KEY", None)
+if GEMINI_KEY:
+    genai.configure(api_key=GEMINI_KEY)
 
 class AIArchitectAdviceView(APIView):
     """
@@ -23,32 +24,47 @@ class AIArchitectAdviceView(APIView):
         house_data = payload.get('house_data', {})
         eco_score_val = payload.get('ecoScore', 0)
         vastu_score_val = payload.get('vastuScore', 0)
-        predicted_cost = payload.get('predictedCostInr', 0)
+        predicted_cost = payload.get('predictedCostInr') or 0
+        user_query = payload.get('user_query', 'Hi')
+        
+        # Ensure predicted_cost is a number for formatting
+        try:
+            predicted_cost = float(predicted_cost)
+        except (ValueError, TypeError):
+            predicted_cost = 0
         
         # Enhanced Prompt Engineering for a '2 Crore' Project feel
         prompt = f"""
-        Role: Senior Indian Civil Engineer & Vastu Consultant.
-        Project: Premium Residential Construction (HCCPS).
-        
-        Parameters:
-        - Location: {house_data.get('city', 'Tier 1 City')}
-        - Dimensions: {house_data.get('plot_area_sqft', 0)} sqft Plot | {house_data.get('builtup_area_sqft', 0)} sqft Built-up.
-        - Configuration: {house_data.get('bhk', 0)} BHK, {house_data.get('floors', 0)} Floors.
-        - Material Specification: {house_data.get('material_tier', 'Premium')} Grade.
-        - Geological Profile: {house_data.get('soil_type', 'Loamy')} Soil.
-        - Estimated Valuation: ₹{predicted_cost:,}
-        - Current Metrics: Eco Score {eco_score_val}/100, Vastu Score {vastu_score_val}/100.
-        
-        Objective: Provide high-fidelity engineering advice covering:
-        1. Foundation recommendations based on soil type.
-        2. Material grades (Steel/Cement/Aggregate) for {house_data.get('material_tier', 'Premium')} builds.
-        3. Specific Vastu corrections to improve the score.
-        4. BOQ (Bill of Quantities) optimization strategies for the {house_data.get('city', 'local')} market.
-        
-        Format: Professional, technical, yet concise numbered points.
-        """
+        Role: You are the Senior Lead Architect and Civil Engineer for HCCPS. 
+        Mindset: You are advising a client on a 2 Crore premium residential project. Your advice must be high-precision, pragmatic, and luxury-oriented.
+        Personality: Human, professional, and slightly witty. Use a grounded tone. 
 
+        STRICT FORMATTING RULES:
+        1. NO ASTERISKS (*) ALLOWED. 
+        2. Use Markdown Headers (##) for titles and plain text for body.
+        3. Use UPPERCASE for emphasis instead of bolding.
+        4. End every response with exactly three SUGGESTED QUESTIONS on a new line.
+
+        PROJECT REPOSITORY (Reference only):
+        - Location: {house_data.get('city', 'Tier 1 City')}
+        - Scale: {house_data.get('plot_area_sqft', 0)} sqft Plot | {house_data.get('builtup_area_sqft', 0)} sqft Built-up.
+        - Specs: {house_data.get('bhk', 0)} BHK, {house_data.get('floors', 0)} Floors, {house_data.get('material_tier', 'Premium')} Grade.
+        - Geology: {house_data.get('soil_type', 'Loamy')}
+        - Valuation: ₹{predicted_cost:,}
+        - Health: Eco {eco_score_val}/100 | Vastu {vastu_score_val}/100.
+
+        CONVERSATIONAL LOGIC:
+        - If the message is a greeting (Hi, Hello, Hlo), respond with a warm, human opening. Mention that you are the lead architect for their {house_data.get('city')} project.
+        - Answer ONLY the specific question. Do not provide a full technical audit unless requested.
+        - If the user asks for advice, integrate the PROJECT REPOSITORY data naturally. 
+        - If structural advice is asked, prioritize M30/M35 concrete and Fe500D/Fe550D steel for this premium tier.
+
+        User Message: {user_query}
+        """
         try:
+            if not GEMINI_KEY:
+                raise ValueError("GEMINI_API_KEY is not configured in environment variables.")
+
             # Using the 2026 production-grade model identifier
             model = genai.GenerativeModel('gemini-3.1-flash-lite-preview')
             response = model.generate_content(prompt)

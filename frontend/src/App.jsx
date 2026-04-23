@@ -274,7 +274,7 @@ export default function App() {
   );
 
   const renderFloorPlannerPage = () => (
-    <MainLayout user={user} onLogout={logout}>
+    <>
       <SEO
         title="Interactive Floor Planner CAD | PropVerse AI"
         description="Professional 2D CAD floor plan editor with layers, snap-to-grid, symbols library, DXF export and real-time cost estimation."
@@ -289,7 +289,7 @@ export default function App() {
       >
         <FloorPlannerPage />
       </Suspense>
-    </MainLayout>
+    </>
   );
 
   return (
