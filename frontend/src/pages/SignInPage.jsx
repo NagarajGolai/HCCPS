@@ -27,7 +27,7 @@ export default function SignInPage() {
   // Redirect to dashboard when successfully authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/predictor");
+      navigate("/predictor", { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 

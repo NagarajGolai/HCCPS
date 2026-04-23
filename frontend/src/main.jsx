@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/react";
 import posthog from "posthog-js";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import App from "./App";
 import "./styles.css";
 
@@ -28,9 +29,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           v7_relativeSplatPath: true
         }}
       >
-        <Sentry.ErrorBoundary fallback={<p className="p-6 text-rose-300">A rendering error occurred.</p>}>
-          <App />
-        </Sentry.ErrorBoundary>
+        <AuthProvider>
+          <Sentry.ErrorBoundary fallback={<p className="p-6 text-rose-300">A rendering error occurred.</p>}>
+            <App />
+          </Sentry.ErrorBoundary>
+        </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
   </React.StrictMode>

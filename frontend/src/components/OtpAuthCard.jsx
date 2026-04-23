@@ -21,6 +21,7 @@ export default function OtpAuthCard({
   const [step, setStep] = useState("email"); // 'email' | 'otp'
   const [otpSent, setOtpSent] = useState(false);
   const [previousError, setPreviousError] = useState("");
+<<<<<<< HEAD
 
 
   // Track previous error state for UX (parent handles success redirect)
@@ -32,6 +33,8 @@ export default function OtpAuthCard({
     }
   }, [loading, otpLoading, error, previousError]);
 
+=======
+>>>>>>> 37f95a6f39cc0e64e0fa3fb69acf0e415cbc705a
 
   // Removed auto-submit OTP to prevent self validating without typing
 

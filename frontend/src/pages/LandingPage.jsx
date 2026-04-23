@@ -98,18 +98,20 @@ export default function LandingPage() {
                     to="/predictor"
                     className="pro-btn group inline-flex w-full sm:w-auto items-center justify-center gap-3 px-8 py-4 text-base md:text-lg shadow-pro-lift hover:shadow-pro-glow pro-lift-hover"
                   >
-                    Launch Estimator
+                    {isAuthenticated ? "Enter Studio Dashboard" : "Launch Estimator"}
                     <span className="transition-transform group-hover:translate-x-1">→</span>
                   </Link>
                 </motion.div>
-                <motion.div {...fadeInUp(0.8)} className="w-full sm:w-auto">
-                  <Link
-                    to={isAuthenticated ? "/predictor" : "/signup"}
-                    className="pro-btn-secondary inline-flex w-full sm:w-auto items-center justify-center px-8 py-4 text-base md:text-lg shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
-                  >
-                    {isAuthenticated ? "Go to Dashboard" : "Create free account"}
-                  </Link>
-                </motion.div>
+                {!isAuthenticated && (
+                  <motion.div {...fadeInUp(0.8)} className="w-full sm:w-auto">
+                    <Link
+                      to="/signup"
+                      className="pro-btn-secondary inline-flex w-full sm:w-auto items-center justify-center px-8 py-4 text-base md:text-lg shadow-pro-soft hover:shadow-pro-lift pro-lift-hover"
+                    >
+                      Create free account
+                    </Link>
+                  </motion.div>
+                )}
               </div>
             </motion.section>
           </div>

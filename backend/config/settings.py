@@ -144,5 +144,5 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = "noreply@propverse.ai"
 
 API_KEY_PEPPER = os.getenv("API_KEY_PEPPER", "change-me-key-pepper")
-GEMINI_API_KEY = "AIzaSyC2IhImCx-0ojrKMeoB3N6e9JZ6xoKlIfk"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 

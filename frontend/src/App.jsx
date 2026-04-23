@@ -33,6 +33,7 @@ import {
   generateBoq,
 } from "./utils/AnalysisEngine";
 import { useAuth } from "./hooks/useAuth";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
@@ -84,7 +85,6 @@ export default function App() {
     [formData, prediction?.predicted_cost_inr],
   );
   const canExport = subscription.plan === "pro" && subscription.is_active;
-  const isAdminUser = Boolean(user?.is_staff || user?.is_superuser);
 
   const handleFieldChange = (event) => {
     const { name, value, type } = event.target;
@@ -280,19 +280,15 @@ export default function App() {
         description="Professional 2D CAD floor plan editor with layers, snap-to-grid, symbols library, DXF export and real-time cost estimation."
         urlPath="/floorplanner"
       />
-      <div className="pro-layout">
-        <div className="pro-container">
-          <Suspense
-            fallback={
-              <div className="p-6 text-nebula-text-secondary">
-                Loading floor planner…
-              </div>
-            }
-          >
-            <FloorPlannerPage />
-          </Suspense>
-        </div>
-      </div>
+      <Suspense
+        fallback={
+          <div className="p-6 text-nebula-text-secondary">
+            Loading floor planner…
+          </div>
+        }
+      >
+        <FloorPlannerPage />
+      </Suspense>
     </MainLayout>
   );
 
@@ -304,36 +300,34 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        
         <Route
           path="/predictor"
           element={
-            isAuthenticated ? (
-              renderPredictorPage()
-            ) : (
-              <Navigate to="/signin" replace state={{ from: location }} />
-            )
+            <ProtectedRoute>
+              {renderPredictorPage()}
+            </ProtectedRoute>
           }
         />
+        
         <Route
           path="/floorplanner"
           element={
-            isAuthenticated ? (
-              renderFloorPlannerPage()
-            ) : (
-              <Navigate to="/signin" replace state={{ from: location }} />
-            )
+            <ProtectedRoute>
+              {renderFloorPlannerPage()}
+            </ProtectedRoute>
           }
         />
+        
         <Route
           path="/admin"
           element={
-            isAuthenticated && isAdminUser ? (
+            <ProtectedRoute adminOnly>
               <AdminDashboard />
-            ) : (
-              <Navigate to="/" replace />
-            )
+            </ProtectedRoute>
           }
         />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

@@ -8,7 +8,7 @@ from rest_framework import permissions, status
 # Professional Configuration: 
 # Move the key to your .env file and access via settings.
 # NEVER hardcode keys in production scripts.
-genai.configure(api_key="AIzaSyC2IhImCx-0ojrKMeoB3N6e9JZ6xoKlIfk")
+genai.configure(api_key=settings.GEMINI_API_KEY)
 
 class AIArchitectAdviceView(APIView):
     """
