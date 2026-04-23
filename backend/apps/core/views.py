@@ -120,7 +120,13 @@ class PredictCostView(APIView):
         serializer.is_valid(raise_exception=True)
         payload = serializer.validated_data
 
-        predicted_cost = predict_construction_cost(payload)
+        try:
+            predicted_cost = predict_construction_cost(payload)
+        except Exception as e:
+            return Response(
+                {"detail": f"Model Prediction Error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         prediction = CostPrediction.objects.create(
             user=request.user,

@@ -110,9 +110,24 @@ export default function App() {
       const result = await predictCost(formData);
       setPrediction(result);
     } catch (error) {
-      setApiError(
-        error?.response?.data?.detail || "Prediction API call failed.",
-      );
+      console.error("[PredictionError]", error);
+      const responseData = error?.response?.data;
+      
+      if (responseData) {
+        if (responseData.detail) {
+          setApiError(responseData.detail);
+        } else if (typeof responseData === 'object') {
+          // Handle DRF field-level errors
+          const messages = Object.entries(responseData)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(' ') : msgs}`)
+            .join(' | ');
+          setApiError(messages || "Validation failed.");
+        } else {
+          setApiError("Prediction API call failed.");
+        }
+      } else {
+        setApiError("Network error: Could not reach prediction server.");
+      }
     } finally {
       setLoading(false);
     }

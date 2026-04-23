@@ -31,9 +31,11 @@ class CostPredictionInputSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        if attrs["builtup_area_sqft"] < attrs["plot_area_sqft"] * 0.45:
-            raise serializers.ValidationError(
-                "Built-up area cannot be unrealistically low for plot size."
+        # We allow the model to handle various ranges, 
+        # but we could add a minimum absolute check if needed.
+        if attrs["builtup_area_sqft"] > attrs["plot_area_sqft"] * 5:
+             raise serializers.ValidationError(
+                "Built-up area cannot exceed 500% of plot area (Max 5 floors approx)."
             )
         return attrs
 

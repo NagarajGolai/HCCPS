@@ -161,6 +161,12 @@ export default function PredictorForm({
             <span>300 sqft</span>
             <span>10,000 sqft</span>
           </div>
+          
+          {formData.builtup_area_sqft < formData.plot_area_sqft * 0.45 && (
+            <p className="mt-4 text-xs text-amber-400 font-medium">
+              ⚠️ Built-up area is very low for this plot. The model expects at least 45% coverage ({(formData.plot_area_sqft * 0.45).toFixed(0)} sqft).
+            </p>
+          )}
         </div>
       )}
 

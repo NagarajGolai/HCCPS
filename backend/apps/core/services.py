@@ -49,19 +49,25 @@ def _load_model():
 
 
 def predict_construction_cost(payload: Dict[str, Any]) -> float:
-    model = _load_model()
-    frame = pd.DataFrame(
-        [
-            {
-                "city": payload["city"],
-                "plot_area_sqft": payload["plot_area_sqft"],
-                "builtup_area_sqft": payload["builtup_area_sqft"],
-                "floors": payload["floors"],
-                "bhk": payload["bhk"],
-                "material_tier": payload["material_tier"],
-                "soil_type": payload["soil_type"],
-            }
-        ]
-    )
-    prediction = model.predict(frame)[0]
-    return float(np.round(prediction, 2))
+    try:
+        model = _load_model()
+        # Use .get with defaults to avoid KeyError if serializer validation was bypassed or slightly off
+        frame = pd.DataFrame(
+            [
+                {
+                    "city": payload.get("city", "Mumbai"),
+                    "plot_area_sqft": float(payload.get("plot_area_sqft", 1000)),
+                    "builtup_area_sqft": float(payload.get("builtup_area_sqft", 800)),
+                    "floors": int(payload.get("floors", 1)),
+                    "bhk": int(payload.get("bhk", 2)),
+                    "material_tier": payload.get("material_tier", "Standard"),
+                    "soil_type": payload.get("soil_type", "Loamy"),
+                }
+            ]
+        )
+        prediction = model.predict(frame)[0]
+        return float(np.round(prediction, 2))
+    except Exception as e:
+        # Log error or raise a custom exception that can be handled by the view
+        print(f"Prediction engine error: {str(e)}")
+        raise RuntimeError(f"Prediction engine failed: {str(e)}")
