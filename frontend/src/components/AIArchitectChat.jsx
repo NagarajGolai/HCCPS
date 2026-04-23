@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Stage, Layer, Text } from 'react-konva';
 import client from '../api/client';
 
-export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predictedCostInr }) {
+export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predictedCostInr, onAdviceUpdate }) {
   const [messages, setMessages] = useState([
     { role: 'ai', content: '🏗️ PropVerse AI Architect online. Share your design thoughts or ask about BOQ!' }
   ]);
@@ -28,19 +28,23 @@ export default function AIArchitectChat({ houseData, ecoScore, vastuScore, predi
     setLoading(true);
 
     try {
-      const { data } = await client.post('/llm/architect-advice/', { 
+      const { data } = await client.post('/llm/architect-advice/', {
         house_data: houseData,
-        ecoScore: ecoScore,
-        vastuScore: vastuScore,
-        predictedCostInr: predictedCostInr,
         user_query: input
       });
       
       const aiMsg = { role: 'ai', content: data.advice || 'Engineering analysis complete. Ready for next query!' };
       setMessages(prev => [...prev, aiMsg]);
+      if (onAdviceUpdate && data.advice) onAdviceUpdate(data.advice);
     } catch (error) {
-      const errorMsg = { role: 'ai', content: `⚠️ Service temporarily offline. ${error.message}` };
-      setMessages(prev => [...prev, errorMsg]);
+      if (error.response?.status === 403) {
+        setMessages(prev => [...prev, { role: 'ai', content: "## ACCESS RESTRICTED\nThis is a PRO feature. To unlock the AI Architect and get professional engineering advice, please upgrade your plan." }]);
+      } else if (error.response?.status === 429) {
+        setMessages(prev => [...prev, { role: 'ai', content: "## DAILY LIMIT REACHED\nYou've reached your daily limit of 10 free messages. To continue getting professional advice today, please upgrade to PRO for ₹500/month." }]);
+      } else {
+        const errorMsg = { role: 'ai', content: `⚠️ Service temporarily offline. ${error.message}` };
+        setMessages(prev => [...prev, errorMsg]);
+      }
     } finally {
       setLoading(false);
     }

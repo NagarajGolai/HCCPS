@@ -8,7 +8,7 @@ export default function MainLayout({ children, user, onLogout }) {
         initial={{ opacity: 0, y: -20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="sticky top-4 z-40 mb-12 pro-card p-6 shadow-pro-lift pro-lift-hover border-pro-blue-200/50 backdrop-blur-xl"
+        className="z-40 mb-12 pro-card p-6 shadow-pro-lift pro-lift-hover border-pro-blue-200/50 backdrop-blur-xl"
       >
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div>

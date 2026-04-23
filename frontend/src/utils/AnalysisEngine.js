@@ -33,13 +33,18 @@ const SOIL_VASTU_FACTOR = {
 export function analyzeEcoScore(houseData) {
   const materialTier = houseData.material_tier || "Standard";
   const base = ECO_BASE_SCORES[materialTier] ?? 60;
+  
+  const solarBonus = houseData.has_solar ? 15 : 0;
+  const rainwaterBonus = houseData.has_rainwater ? 10 : 0;
+  const waterSourcePenalty = houseData.water_source === 'Borewell' ? 5 : 0;
+
   const density = Number(houseData.builtup_area_sqft || 0) / Number(houseData.plot_area_sqft || 1);
   const floorPenalty = Math.max(0, Number(houseData.floors || 1) - 2) * 3;
   const densityPenalty = density > 1.1 ? Math.min(14, Math.round((density - 1.1) * 18)) : 0;
-  const bhkPenalty = Number(houseData.bhk || 1) >= 5 ? 4 : 0;
-  const score = Math.max(0, Math.min(100, Math.round(base - floorPenalty - densityPenalty - bhkPenalty)));
+  
+  const score = Math.max(0, Math.min(100, Math.round(base + solarBonus + rainwaterBonus - waterSourcePenalty - floorPenalty - densityPenalty)));
   const improvement = MATERIAL_IMPROVEMENTS[materialTier] || MATERIAL_IMPROVEMENTS.Standard;
-  const projectedScore = Math.min(100, score + improvement.ecoGain);
+  const projectedScore = Math.min(100, score + (houseData.has_solar ? 0 : improvement.ecoGain));
 
   return {
     score,
@@ -53,30 +58,34 @@ export function analyzeEcoScore(houseData) {
 
 export function analyzeVastuScore(houseData) {
   const floors = Number(houseData.floors || 1);
-  const bhk = Number(houseData.bhk || 1);
   const builtup = Number(houseData.builtup_area_sqft || 1000);
   const plot = Number(houseData.plot_area_sqft || 1200);
   const soilBonus = SOIL_VASTU_FACTOR[houseData.soil_type] ?? 0;
+  
+  const facingBonus = houseData.facing === 'East' ? 8 : (houseData.facing === 'North' ? 5 : 0);
+  const kitchenBonus = houseData.kitchen_location === 'South-East' ? 12 : 0;
+  const boundaryBonus = houseData.has_boundary_wall ? 3 : 0;
+
   const ratio = builtup / Math.max(plot, 1);
-  let score = 72;
+  let score = 65; // Base score adjusted
+
+  score += facingBonus + kitchenBonus + boundaryBonus + soilBonus;
 
   if (ratio <= 0.85) score += 10;
   else if (ratio <= 1.05) score += 5;
   else score -= 6;
 
-  if (bhk >= 2 && bhk <= 4) score += 5;
   if (floors <= 2) score += 4;
   if (floors >= 4) score -= 5;
-  score += soilBonus;
 
   const findings = [];
+  if (houseData.facing !== 'East') findings.push(`${houseData.facing} facing is acceptable, but East orientation is preferred for morning prana.`);
+  if (houseData.kitchen_location !== 'South-East') findings.push("Kitchen is not in the Agni (SE) zone; consider minor interior adjustments.");
+  if (!houseData.has_boundary_wall) findings.push("Lack of boundary wall may affect energy containment and site security.");
   if (ratio > 1.1) findings.push("High built-up density suggests tighter energy circulation zones.");
-  if (floors >= 4) findings.push("Tall vertical stacking may reduce natural airflow harmony.");
-  if (houseData.soil_type === "Black Cotton") {
-    findings.push("Black Cotton soil indicates enhanced foundation correction advisory.");
-  }
+  
   if (findings.length === 0) {
-    findings.push("Primary massing ratio and floor distribution are broadly Vastu-aligned.");
+    findings.push("Your configuration is exceptionally well-aligned with Vastu principles.");
   }
 
   const bounded = Math.max(0, Math.min(100, Math.round(score)));

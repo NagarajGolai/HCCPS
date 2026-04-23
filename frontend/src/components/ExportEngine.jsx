@@ -9,6 +9,7 @@ export default function ExportEngine({
   eco,
   vastu,
   boq,
+  aiAdvice,
   canExport,
   isAuthenticated,
   onRequireAuth,
@@ -17,100 +18,142 @@ export default function ExportEngine({
   const handleExport = async () => {
     if (!isAuthenticated) {
       onRequireAuth?.();
-      console.warn("[ExportEngine] Blocked: Not authenticated");
       return;
     }
     
     if (!canExport) {
       onRequireUpgrade();
-      console.warn("[ExportEngine] Blocked: Not Pro subscription");
       return;
     }
-    
-    console.log("[ExportEngine] Export allowed - authenticated + Pro");
     
     try {
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
 
-      pdf.setFillColor(9, 14, 29);
-      pdf.rect(0, 0, pageWidth, 297, "F");
-      pdf.setTextColor(204, 251, 241);
-      pdf.setFontSize(20);
-      pdf.text("PropVerse Master Blueprint", 14, 16);
-      pdf.setFontSize(10);
-      pdf.setTextColor(186, 230, 253);
-      pdf.text(`City: ${formData.city} | Program: ${formData.bhk} BHK / ${formData.floors} floors`, 14, 23);
-      pdf.text(
-        `Built-up: ${Number(formData.builtup_area_sqft).toLocaleString("en-IN")} sq ft | Plot: ${Number(formData.plot_area_sqft).toLocaleString("en-IN")} sq ft`,
-        14,
-        29
-      );
+      // Premium Dark Theme Header
+      pdf.setFillColor(15, 23, 42); // slate-900
+      pdf.rect(0, 0, pageWidth, 40, "F");
+      
+      // Decorative Gold Accent
+      pdf.setFillColor(251, 191, 36); // fbbf24 (Gold)
+      pdf.rect(0, 0, pageWidth, 2, "F");
 
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(22);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("PROVERSE MASTER BLUEPRINT", 14, 18);
+      
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(148, 163, 184); // slate-400
+      pdf.text(`ISSUED ON: ${new Date().toLocaleDateString()} | LICENSE: PRO-ACCESS`, 14, 25);
+      
+      pdf.setTextColor(251, 191, 36);
+      pdf.text(`SPECIFICATIONS: ${formData.bhk} BHK | ${formData.floors} FLOORS | ${formData.city}`, 14, 30);
+
+      // Floor Plan Section
       if (floorPlanRef?.current) {
         const canvas = await html2canvas(floorPlanRef.current, {
-          backgroundColor: "#020617",
+          backgroundColor: "#0f172a",
           scale: 2,
+          useCORS: true,
         });
         const image = canvas.toDataURL("image/png");
-        pdf.addImage(image, "PNG", 14, 35, 182, 72);
+        pdf.setFillColor(30, 41, 59); // slate-800
+        pdf.rect(12, 45, pageWidth - 24, 80, "F");
+        pdf.addImage(image, "PNG", 14, 47, 182, 76);
       }
 
-      let y = 116;
-      pdf.setTextColor(125, 211, 252);
-      pdf.setFontSize(13);
-      pdf.text("ML Cost Breakdown (BOQ)", 14, y);
-      y += 5;
-      pdf.setTextColor(226, 232, 240);
-      pdf.setFontSize(10);
-      boq.forEach((line) => {
-        pdf.text(
-          `${line.item} - ₹${Number(line.amount).toLocaleString("en-IN")} (${line.qtyHint})`,
-          14,
-          y
-        );
+      let y = 135;
+      
+      // Two-column layout for metrics
+      pdf.setTextColor(251, 191, 36);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("STRUCTURAL METRICS", 14, y);
+      
+      pdf.setTextColor(15, 23, 42);
+      y += 6;
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(51, 65, 85);
+      
+      const metrics = [
+        `PLOT AREA: ${Number(formData.plot_area_sqft).toLocaleString()} SQ FT`,
+        `BUILT-UP AREA: ${Number(formData.builtup_area_sqft).toLocaleString()} SQ FT`,
+        `MATERIAL TIER: ${formData.material_tier.toUpperCase()}`,
+        `SOIL TYPE: ${formData.soil_type.toUpperCase()}`
+      ];
+      
+      metrics.forEach(m => {
+        pdf.text(m, 14, y);
         y += 5;
       });
 
-      y += 4;
-      pdf.setTextColor(125, 211, 252);
-      pdf.setFontSize(13);
-      pdf.text("Vastu Compliance Report", 14, y);
-      y += 5;
-      pdf.setFontSize(10);
-      pdf.setTextColor(226, 232, 240);
-      pdf.text(`Rating: ${vastu.score}/100 (${vastu.label})`, 14, y);
-      y += 5;
-      vastu.findings.slice(0, 3).forEach((finding) => {
-        pdf.text(`- ${finding}`, 14, y);
-        y += 5;
-      });
+      // AI Advice Section - High Value
+      y = 135;
+      pdf.setTextColor(251, 191, 36);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("AI ARCHITECT INSIGHTS", 100, y);
+      
+      y += 6;
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "italic");
+      pdf.setTextColor(71, 85, 105);
+      
+      const adviceLines = aiAdvice 
+        ? pdf.splitTextToSize(aiAdvice.replace(/[*#]/g, ''), 95)
+        : ["Run AI Architect advice to populate professional structural insights here."];
+      
+      pdf.text(adviceLines.slice(0, 20), 100, y);
 
-      y += 3;
-      pdf.setTextColor(125, 211, 252);
-      pdf.setFontSize(13);
-      pdf.text("Eco-Score Analysis", 14, y);
-      y += 5;
-      pdf.setFontSize(10);
-      pdf.setTextColor(226, 232, 240);
-      pdf.text(`Current Eco Score: ${eco.score}/100 (${eco.label})`, 14, y);
-      y += 5;
-      pdf.text(`Recommendation: ${eco.recommendation}`, 14, y);
-      y += 5;
-      pdf.text(
-        `Potential Gain: +${eco.ecoGain} points | Cost impact: ${eco.costDeltaPercent}%`,
-        14,
-        y
-      );
+      // Costing Table
+      y = 175;
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(12, y - 5, pageWidth - 24, 45, "F");
+      
+      pdf.setTextColor(15, 23, 42);
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ESTIMATED BILL OF QUANTITIES (BOQ)", 14, y);
+      
       y += 7;
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "normal");
+      boq.slice(0, 6).forEach((line) => {
+        pdf.text(`${line.item}`, 14, y);
+        pdf.text(`₹${Number(line.amount).toLocaleString()}`, 80, y);
+        pdf.text(`${line.qtyHint}`, 130, y);
+        y += 5;
+      });
 
-      const predictedText = prediction
-        ? `Predicted Construction Cost: ₹${Number(prediction.predicted_cost_inr).toLocaleString("en-IN")}`
-        : "Predicted Construction Cost: Run ML estimation to attach final cost.";
-      pdf.setTextColor(196, 181, 253);
-      pdf.text(predictedText, 14, y);
+      // Vastu & Eco Summary
+      y = 225;
+      pdf.setTextColor(251, 191, 36);
+      pdf.setFontSize(11);
+      pdf.text("COMPLIANCE & SUSTAINABILITY", 14, y);
+      
+      y += 7;
+      pdf.setFontSize(9);
+      pdf.setTextColor(51, 65, 85);
+      pdf.text(`VASTU RATING: ${vastu.score}/100 (${vastu.label})`, 14, y);
+      pdf.text(`ECO SCORE: ${eco.score}/100 (${eco.label})`, 100, y);
+      
+      y += 10;
+      pdf.setFillColor(15, 23, 42);
+      pdf.rect(12, y, pageWidth - 24, 15, "F");
+      
+      const predictedCost = prediction 
+        ? `TOTAL ESTIMATED INVESTMENT: ₹${Number(prediction.predicted_cost_inr).toLocaleString()}`
+        : "COST ESTIMATION PENDING";
+        
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(predictedCost, 18, y + 10);
 
-      pdf.save(`PropVerse-Blueprint-${formData.city}-${Date.now()}.pdf`);
+      pdf.save(`PROVERSE-MASTER-BLUEPRINT-${Date.now()}.pdf`);
     } catch (error) {
       console.error("[ExportEngine] PDF generation failed:", error);
     }
@@ -142,7 +185,7 @@ export default function ExportEngine({
         type="button"
         onClick={handleExport}
         className={`mt-4 h-11 w-full rounded-xl bg-gradient-to-r ${buttonClass} text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed`}
-        disabled={!isAuthenticated || !canExport}
+        disabled={!isAuthenticated}
       >
         {buttonText}
       </button>

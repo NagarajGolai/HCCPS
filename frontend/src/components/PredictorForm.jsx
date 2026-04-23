@@ -31,84 +31,110 @@ export default function PredictorForm({
         </p>
       </div>
 
-      <div className="pro-grid lg:grid-cols-2 gap-8">
+      <div className="space-y-12">
+        {/* SECTION 1: CORE DIMENSIONS */}
         <div>
-          <label className="pro-label">
-            City Market
-          </label>
-
-          <select
-            name="city"
-            value={formData.city}
-            onChange={onChange}
-            disabled={blocked}
-            className="pro-input focus:shadow-pro-glow"
-          >
-            {CITY_OPTIONS.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="pro-label">
-            Finish Quality
-          </label>
-          <select
-            name="material_tier"
-            value={formData.material_tier}
-            onChange={onChange}
-            disabled={blocked}
-            className="pro-input text-base font-semibold focus:shadow-pro-glow disabled:opacity-50"
-          >
-            {MATERIAL_OPTIONS.map(tier => (
-              <option key={tier} value={tier}>{tier}</option>
-            ))}
-          </select>
-        </div>
-
-        <InputField
-          label="Built-up Area (sqft)"
-          name="builtup_area_sqft"
-          value={formData.builtup_area_sqft}
-          onChange={onChange}
-          min={250}
-          max={15000}
-          blocked={blocked}
-        />
-
-        <InputField
-          label="Plot Size (sqft)"
-          name="plot_area_sqft"
-          value={formData.plot_area_sqft}
-          onChange={onChange}
-          min={300}
-          max={10000}
-          blocked={blocked}
-        />
-
-        <div className="lg:col-span-2">
-          <label className="pro-label">
-            Rooms & Structure
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1.5 h-6 bg-sky-500 rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">01. Core Dimensions</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="pro-label">Market City</label>
+              <select name="city" value={formData.city} onChange={onChange} disabled={blocked} className="pro-input">
+                {CITY_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="pro-label">Finish Quality</label>
+              <select name="material_tier" value={formData.material_tier} onChange={onChange} disabled={blocked} className="pro-input">
+                {MATERIAL_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <InputField label="Built-up Area (sqft)" name="builtup_area_sqft" value={formData.builtup_area_sqft} onChange={onChange} min={250} max={15000} blocked={blocked} />
             <InputField label="BHK" name="bhk" value={formData.bhk} min={1} max={10} blocked={blocked} onChange={onChange} />
             <InputField label="Floors" name="floors" value={formData.floors} min={1} max={10} blocked={blocked} onChange={onChange} />
             <div>
-              <label className="pro-label">
-                Soil Type
-              </label>
-              <select
-                name="soil_type"
-                value={formData.soil_type}
-                onChange={onChange}
-                disabled={blocked}
-                className="pro-input text-base font-semibold focus:shadow-pro-glow disabled:opacity-50"
-              >
-                {SOIL_OPTIONS.map(soil => (
-                  <option key={soil} value={soil}>{soil}</option>
-                ))}
+              <label className="pro-label">Soil Type</label>
+              <select name="soil_type" value={formData.soil_type} onChange={onChange} disabled={blocked} className="pro-input">
+                {SOIL_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2: VASTU & ORIENTATION */}
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">02. Vastu & Orientation</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="pro-label">Main Facing</label>
+              <select name="facing" value={formData.facing} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="East">East (Recommended)</option>
+                <option value="North">North</option>
+                <option value="West">West</option>
+                <option value="South">South</option>
+              </select>
+            </div>
+            <div>
+              <label className="pro-label">Kitchen Placement</label>
+              <select name="kitchen_location" value={formData.kitchen_location} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="South-East">South-East (Agni)</option>
+                <option value="North-West">North-West</option>
+                <option value="North-East">North-East</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="pro-label">Parking Capacity</label>
+              <select name="parking_capacity" value={formData.parking_capacity} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="None">None</option>
+                <option value="1 Car">1 Car</option>
+                <option value="2 Cars">2 Cars</option>
+                <option value="3+ Cars">3+ Cars</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3: INFRASTRUCTURE & ECO */}
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">03. Infrastructure & Eco</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <label className="pro-label">Primary Water Source</label>
+              <select name="water_source" value={formData.water_source} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="Municipal">Municipal / City Line</option>
+                <option value="Borewell">Borewell / Ground</option>
+                <option value="Tanker">Tanker / External</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all cursor-pointer h-full">
+              <input type="checkbox" name="has_solar" checked={formData.has_solar} onChange={(e) => onChange({ target: { name: 'has_solar', value: e.target.checked, type: 'checkbox' }})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-400 focus:ring-sky-500/30" />
+              <div>
+                <p className="text-[10px] font-black text-white uppercase tracking-wider">Solar Energy</p>
+                <p className="text-[9px] text-slate-500">Eco-Score Bonus</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all cursor-pointer h-full">
+              <input type="checkbox" name="has_rainwater" checked={formData.has_rainwater} onChange={(e) => onChange({ target: { name: 'has_rainwater', value: e.target.checked, type: 'checkbox' }})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-400 focus:ring-sky-500/30" />
+              <div>
+                <p className="text-[10px] font-black text-white uppercase tracking-wider">Rainwater</p>
+                <p className="text-[9px] text-slate-500">Water Conservation</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all cursor-pointer h-full">
+              <input type="checkbox" name="has_boundary_wall" checked={formData.has_boundary_wall} onChange={(e) => onChange({ target: { name: 'has_boundary_wall', value: e.target.checked, type: 'checkbox' }})} className="w-5 h-5 rounded border-slate-700 bg-slate-900 text-sky-400 focus:ring-sky-500/30" />
+              <div>
+                <p className="text-[10px] font-black text-white uppercase tracking-wider">Boundary Wall</p>
+                <p className="text-[9px] text-slate-500">Security & Privacy</p>
+              </div>
             </div>
           </div>
         </div>
@@ -116,10 +142,11 @@ export default function PredictorForm({
 
       {/* Plot Slider */}
       {!blocked && (
-        <div className="mt-8 p-6 rounded-3xl border border-slate-700/70 bg-slate-950/30 shadow-pro-soft">
-          <label className="pro-label mb-4">
-            Plot Size Range
-          </label>
+        <div className="mt-12 p-8 rounded-3xl border border-white/5 bg-black/40 shadow-pro-soft">
+          <div className="flex items-center justify-between mb-6">
+            <label className="pro-label mb-0">Total Plot Area</label>
+            <span className="font-black text-[#fbbf24] text-xl">{formData.plot_area_sqft.toLocaleString()} <span className="text-[10px] text-slate-500">SQFT</span></span>
+          </div>
           <input
             type="range"
             name="plot_area_sqft"
@@ -128,11 +155,10 @@ export default function PredictorForm({
             step="50"
             value={formData.plot_area_sqft}
             onChange={onChange}
-            className="w-full h-3 rounded-lg appearance-none cursor-pointer bg-slate-800 accent-sky-300"
+            className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-slate-800 accent-[#fbbf24]"
           />
-          <div className="flex justify-between text-xs text-slate-400 mt-2 font-mono">
+          <div className="flex justify-between text-[9px] text-slate-500 mt-4 font-black uppercase tracking-widest">
             <span>300 sqft</span>
-            <span className="font-bold text-slate-100 text-lg">{formData.plot_area_sqft.toLocaleString()} sqft</span>
             <span>10,000 sqft</span>
           </div>
         </div>

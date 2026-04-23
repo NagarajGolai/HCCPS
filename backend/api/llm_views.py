@@ -11,13 +11,15 @@ GEMINI_KEY = getattr(settings, "GEMINI_API_KEY", None)
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
 
+from apps.core.throttles import PredictionDailyUserThrottle
+
 class AIArchitectAdviceView(APIView):
     """
     The intellectual core of the HCCPS system.
     Provides expert-level civil engineering insights for Indian residential projects.
     """
-    authentication_classes = []
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [PredictionDailyUserThrottle]
 
     def post(self, request):
         payload = request.data
@@ -39,11 +41,15 @@ class AIArchitectAdviceView(APIView):
         Mindset: You are advising a client on a 2 Crore premium residential project. Your advice must be high-precision, pragmatic, and luxury-oriented.
         Personality: Human, professional, and slightly witty. Use a grounded tone. 
 
+        Basic : 1. The owner of this website is Nagaraj Golai. His information is https://nagarajgolai.netlify.app/ (fetch the details of him from this link and answer accordingly)
+        2. Talk normally like a friend with the user with dark humor, roasting, simple english.
+        3. Refer the user by his name. The user's name is: {request.user.first_name or request.user.username or "Client"}.
+
         STRICT FORMATTING RULES:
-        1. NO ASTERISKS (*) ALLOWED. 
-        2. Use Markdown Headers (##) for titles and plain text for body.
-        3. Use UPPERCASE for emphasis instead of bolding.
-        4. End every response with exactly three SUGGESTED QUESTIONS on a new line.
+        1. NO ASTERISKS (*) or (#) ALLOWED. 
+        2. Use UPPERCASE for emphasis instead of bolding.
+        3. End every response with exactly three SUGGESTED QUESTIONS on a new line.
+        4. Keep the chat simple and easier to the user to understand
 
         PROJECT REPOSITORY (Reference only):
         - Location: {house_data.get('city', 'Tier 1 City')}
@@ -65,8 +71,8 @@ class AIArchitectAdviceView(APIView):
             if not GEMINI_KEY:
                 raise ValueError("GEMINI_API_KEY is not configured in environment variables.")
 
-            # Using the 2026 production-grade model identifier
-            model = genai.GenerativeModel('gemini-3.1-flash-lite-preview')
+            # Using the absolute most optimized lite model for free-tier stability
+            model = genai.GenerativeModel('gemini-flash-lite-latest')
             response = model.generate_content(prompt)
             
             advice = response.text
@@ -90,7 +96,7 @@ class AIArchitectAdviceView(APIView):
             "advice": advice,
             "status": response_status,
             "metadata": {
-                "model_used": "gemini-3-flash",
+                "model_used": "gemini-2.0-flash-lite",
                 "timestamp": "2026-04-22"
             }
         })

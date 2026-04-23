@@ -10,8 +10,12 @@ import {
 import FloorPlanEditor from '../components/FloorPlanEditor';
 import FloorPlan3D from '../components/FloorPlan3D';
 import AIArchitectChat from '../components/AIArchitectChat';
+import ExportEngine from '../components/ExportEngine';
 import { useAuth } from '../hooks/useAuth';
+import { useSubscription } from '../hooks/useSubscription';
+import PricingModal from '../components/PricingModal';
 import SEO from '../components/SEO';
+import { analyzeEcoScore, analyzeVastuScore, generateBoq } from '../utils/AnalysisEngine';
 
 const panelVariants = {
   hiddenLeft: { x: -400, opacity: 0 },
@@ -50,6 +54,8 @@ export default function FloorPlannerPage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [zoom, setZoom] = useState(1);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const subscription = useSubscription();
   
   const [formData, setFormData] = useState({
     city: "Mumbai", plot_area_sqft: 2400, builtup_area_sqft: 0, floors: 1, bhk: 3, material_tier: "Premium", soil_type: "Loamy",
@@ -126,6 +132,10 @@ export default function FloorPlannerPage() {
   };
 
   const handleExport = () => {
+    if (subscription.plan !== 'pro') {
+      setIsPricingOpen(true);
+      return;
+    }
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(elements, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
@@ -136,6 +146,10 @@ export default function FloorPlannerPage() {
   };
 
   const handleShare = () => {
+    if (subscription.plan !== 'pro') {
+      setIsPricingOpen(true);
+      return;
+    }
     const dummyLink = window.location.href;
     navigator.clipboard.writeText(dummyLink).then(() => {
       alert("Project link copied to clipboard! You can now share your blueprint.");
@@ -151,6 +165,9 @@ export default function FloorPlannerPage() {
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 rounded-full bg-[#fbbf24] shadow-[0_0_15px_#fbbf24]" />
             <h1 className="text-[12px] font-black tracking-[0.3em] uppercase">PROVERSE <span className="text-[#fbbf24]">STUDIO</span></h1>
+            {subscription.plan === 'pro' && (
+              <div className="px-2 py-0.5 bg-[#fbbf24]/10 border border-[#fbbf24]/30 rounded text-[7px] font-black text-[#fbbf24] tracking-widest uppercase">Pro</div>
+            )}
           </div>
           
           <div className="flex bg-black/40 rounded-lg p-0.5 border border-white/5">
@@ -240,10 +257,32 @@ export default function FloorPlannerPage() {
                   </div>
                 </div>
               ) : <div className="py-12 text-center border-b border-white/5"><p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">Select an element</p></div>}
-              <div className="space-y-6 pt-4"><h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#fbbf24]">BIM Output</h3><div className="text-center py-4 bg-black/40 rounded-2xl border border-white/5"><p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Built-Up Area</p><div className="text-4xl font-black text-white">{calculatedArea}<span className="text-xs text-[#fbbf24] ml-1">FT²</span></div></div><AIArchitectChat houseData={{ ...formData, builtup_area_sqft: calculatedArea }} /></div>
+              <div className="space-y-6 pt-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-[#fbbf24]">BIM Output</h3>
+                <div className="text-center py-4 bg-black/40 rounded-2xl border border-white/5">
+                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Built-Up Area</p>
+                  <div className="text-4xl font-black text-white">{calculatedArea}<span className="text-xs text-[#fbbf24] ml-1">FT²</span></div>
+                </div>
+                
+                <div className="relative group">
+                  {subscription.plan !== 'pro' && (
+                    <div className="absolute inset-0 z-50 bg-[#0f172a]/40 backdrop-blur-[2px] flex items-center justify-center rounded-2xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <button 
+                        onClick={() => setIsPricingOpen(true)}
+                        className="px-4 py-2 bg-[#fbbf24] text-slate-950 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-xl transform scale-90 group-hover:scale-100 transition-all"
+                      >
+                        Unlock AI Architect
+                      </button>
+                    </div>
+                  )}
+                  <AIArchitectChat houseData={{ ...formData, builtup_area_sqft: calculatedArea }} />
+                </div>
+              </div>
             </motion.aside>
           )}
         </AnimatePresence>
+        
+        <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} onSucess={subscription.refresh} />
 
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-4">
           <div className="bg-[#0f172a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-1.5 flex shadow-2xl items-center">

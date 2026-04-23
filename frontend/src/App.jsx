@@ -20,7 +20,7 @@ import {
 
 import { fetchSubscriptionStatus, predictCost } from "./api/proptechApi";
 import AnalysisPanel from "./components/AnalysisPanel";
-import Checkout from "./components/Checkout";
+import PricingModal from "./components/PricingModal";
 import DeveloperSettings from "./components/DeveloperSettings";
 import MarketDashboard from "./components/MarketDashboard";
 import PredictionResult from "./components/PredictionResult";
@@ -53,6 +53,13 @@ const INITIAL_FORM_STATE = {
   bhk: 3,
   material_tier: "Premium",
   soil_type: "Loamy",
+  facing: "East",
+  kitchen_location: "South-East",
+  has_solar: false,
+  has_rainwater: false,
+  parking_capacity: "1 Car",
+  water_source: "Municipal",
+  has_boundary_wall: true,
 };
 
 export default function App() {
@@ -67,6 +74,7 @@ export default function App() {
     is_active: false,
   });
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState("");
   const floorPlanRef = useRef(null);
 
   const { user, isAuthenticated, logout } = useAuth();
@@ -219,6 +227,7 @@ export default function App() {
                 eco={eco}
                 vastu={vastu}
                 boq={boq}
+                aiAdvice={aiAdvice}
                 canExport={canExport}
                 isAuthenticated={isAuthenticated}
                 onRequireAuth={handleRequireAuth}
@@ -255,18 +264,16 @@ export default function App() {
                     ecoScore={eco.score}
                     vastuScore={vastu.score}
                     predictedCostInr={prediction?.predicted_cost_inr || null}
+                    onAdviceUpdate={setAiAdvice}
                   />
                 </Suspense>
               </div>
             </div>
           </div>
-          <Checkout
-            open={checkoutOpen}
+          <PricingModal
+            isOpen={checkoutOpen}
             onClose={() => setCheckoutOpen(false)}
-            user={user}
-            isAuthenticated={isAuthenticated}
-            onUpgradeSuccess={refreshSubscription}
-            onRequireAuth={handleRequireAuth}
+            onSucess={refreshSubscription}
           />
         </div>
       </div>

@@ -102,8 +102,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_THROTTLE_RATES": {
-        "prediction_free": "5/day",
-        "prediction_pro": "100/day",
+        "prediction_free": "10/day",
+        "prediction_pro": "1000/day",
     },
 }
 
@@ -120,7 +120,7 @@ MODEL_ARTIFACT_PATH = BASE_DIR / "ml_engine" / "artifacts" / "cost_predictor.job
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_Sg23xS6yGwLKSf")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "ZCnEGpgwXqKil5g2I3V2lFLS")
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-RAZORPAY_PRO_PLAN_AMOUNT_PAISE = int(os.getenv("RAZORPAY_PRO_PLAN_AMOUNT_PAISE", "199900"))
+RAZORPAY_PRO_PLAN_AMOUNT_PAISE = int(os.getenv("RAZORPAY_PRO_PLAN_AMOUNT_PAISE", "50000"))
 
 SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
 if SENTRY_DSN:

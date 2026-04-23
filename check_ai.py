@@ -14,14 +14,14 @@ try:
     for m in models:
         # We only care about models that can generate text/content
         if 'generateContent' in m.supported_generation_methods:
-            print(f"✅ AVAILABLE: {m.name}")
+            print(f"[OK] AVAILABLE: {m.name}")
             found_any = True
     
     if not found_any:
-        print("❌ No generation models found for this key.")
+        print("[ERROR] No generation models found for this key.")
         
 except Exception as e:
-    print(f"❗ CRITICAL ERROR: {e}")
+    print(f"[CRITICAL ERROR] {e}")
     print("\nPossible issues:")
     print("1. Your API key might be restricted or deleted (Rotate it!).")
     print("2. Your internet connection/proxy is blocking Google APIs.")
