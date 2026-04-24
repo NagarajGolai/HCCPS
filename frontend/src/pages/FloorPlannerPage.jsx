@@ -59,6 +59,8 @@ export default function FloorPlannerPage({ initialElements }) {
   const [viewMode, setViewMode] = useState('2d');
   const [lightingMode, setLightingMode] = useState('day'); // 'day', 'night', 'punk'
   const [showGrid, setShowGrid] = useState(true);
+  const [showMeasurements, setShowMeasurements] = useState(true);
+  const [showFurniture, setShowFurniture] = useState(true);
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [zoom, setZoom] = useState(1);
@@ -134,7 +136,8 @@ export default function FloorPlannerPage({ initialElements }) {
   };
 
   const toggleLighting = () => {
-    if (lightingMode === 'day') setLightingMode('night');
+    if (lightingMode === 'day') setLightingMode('glass');
+    else if (lightingMode === 'glass') setLightingMode('night');
     else if (lightingMode === 'night') setLightingMode('punk');
     else setLightingMode('day');
   };
@@ -184,10 +187,13 @@ export default function FloorPlannerPage({ initialElements }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <button onClick={() => setShowFurniture(!showFurniture)} className={`p-1.5 rounded-lg border transition-all ${showFurniture ? 'bg-[#fbbf24]/20 border-[#fbbf24] text-[#fbbf24]' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'}`} title="Toggle Furniture"><Lamp size={16} /></button>
+            <button onClick={() => setShowMeasurements(!showMeasurements)} className={`p-1.5 rounded-lg border transition-all ${showMeasurements ? 'bg-[#fbbf24]/20 border-[#fbbf24] text-[#fbbf24]' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'}`} title="Toggle Measurements"><Ruler size={16} /></button>
             <button onClick={() => setShowGrid(!showGrid)} className={`p-1.5 rounded-lg border transition-all ${showGrid ? 'bg-[#fbbf24]/20 border-[#fbbf24] text-[#fbbf24]' : 'bg-white/5 border-white/10 text-slate-500 hover:text-white'}`} title="Toggle Grid"><Grid3X3 size={16} /></button>
             {viewMode === '3d' && (
               <button onClick={toggleLighting} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
                 {lightingMode === 'day' && <Sun size={14} className="text-yellow-400" />}
+                {lightingMode === 'glass' && <Sparkles size={14} className="text-white" />}
                 {lightingMode === 'night' && <Moon size={14} className="text-blue-400" />}
                 {lightingMode === 'punk' && <Sparkles size={14} className="text-pink-500" />}
                 {lightingMode.toUpperCase()}
@@ -238,11 +244,11 @@ export default function FloorPlannerPage({ initialElements }) {
           <AnimatePresence mode="wait">
             {viewMode === '2d' ? (
               <motion.div key="2d" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
-                <FloorPlanEditor elements={elements} onUpdate={handleUpdateElements} activeTool={activeTool} setArea={setCalculatedArea} zoom={zoom} selectedId={selectedId} setSelectedId={setSelectedId} />
+                <FloorPlanEditor elements={elements} onUpdate={handleUpdateElements} activeTool={activeTool} setArea={setCalculatedArea} zoom={zoom} selectedId={selectedId} setSelectedId={setSelectedId} showMeasurements={showMeasurements} showFurniture={showFurniture} />
               </motion.div>
             ) : (
               <motion.div key="3d" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
-                <FloorPlan3D elements={elements} lightingMode={lightingMode} setLightingMode={setLightingMode} showGrid={showGrid} />
+                <FloorPlan3D elements={elements} lightingMode={lightingMode} setLightingMode={setLightingMode} showGrid={showGrid} showMeasurements={showMeasurements} showFurniture={showFurniture} />
               </motion.div>
             )}
           </AnimatePresence>

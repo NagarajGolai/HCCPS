@@ -25,7 +25,7 @@ const SYMBOLS = {
   window: "M0,0 L100,0 L100,20 L0,20 Z M50,0 L50,20",
 };
 
-export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'select', setArea, zoom = 1, selectedId, setSelectedId }) {
+export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'select', setArea, zoom = 1, selectedId, setSelectedId, showMeasurements = true, showFurniture = true }) {
   const [isDrawing, setIsDrawing] = useState(false);
   const [tempPoints, setTempPoints] = useState([]);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -176,6 +176,9 @@ export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'sele
 
           {elements.map((el) => {
             const isSelected = selectedId === el.id;
+            const isFurniture = !['room', 'wall', 'door', 'window'].includes(el.type);
+            if (isFurniture && !showFurniture) return null;
+
             return (
               <Group 
                 key={el.id} id={el.id} x={el.x} y={el.y} width={el.width} height={el.height} rotation={el.rotation}
@@ -218,6 +221,24 @@ export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'sele
                   </Group>
                 )}
                 <Text text={el.name} x={5} y={-15} fontSize={10} fontStyle="bold" fill={isSelected ? THEME.GOLD : THEME.TEXT_PRIMARY} />
+                {showMeasurements && (
+                  <>
+                    {el.type === 'room' && (
+                      <Text 
+                        text={`${(el.width/SCALE_FACTOR).toFixed(1)}' × ${(el.height/SCALE_FACTOR).toFixed(1)}'`} 
+                        x={5} y={el.height - 15} 
+                        fontSize={8} fontStyle="bold" fill={THEME.GOLD} 
+                      />
+                    )}
+                    {el.type === 'wall' && el.points && (
+                      <Text 
+                        text={`${(Math.hypot(el.points[2], el.points[3])/SCALE_FACTOR).toFixed(1)}'`} 
+                        x={el.points[2]/2 + 5} y={el.points[3]/2 + 5} 
+                        fontSize={8} fontStyle="bold" fill={THEME.GOLD} 
+                      />
+                    )}
+                  </>
+                )}
               </Group>
             );
           })}

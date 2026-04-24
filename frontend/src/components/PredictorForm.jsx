@@ -9,6 +9,7 @@ export default function PredictorForm({
   onChange,
   onSubmit,
   onAutoGenerate,
+  onBlankDraft,
   loading,
   apiError,
   isAuthenticated,
@@ -220,21 +221,32 @@ export default function PredictorForm({
         </span>
       </motion.button>
 
-      <motion.button
-        whileHover={{ scale: 1.02, boxShadow: "0 0 25px rgba(251, 191, 36, 0.4)" }}
-        whileTap={{ scale: 0.98 }}
-        type="button"
-        onClick={onAutoGenerate}
-        disabled={blocked}
-        className="group relative mt-4 h-16 w-full rounded-2xl bg-[#fbbf24]/10 border-2 border-[#fbbf24]/30 text-lg font-black text-[#fbbf24] shadow-pro-lift hover:bg-[#fbbf24]/20 transition-all disabled:cursor-not-allowed disabled:opacity-60 overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#fbbf24]/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
-        <span className="relative flex items-center justify-center gap-3 transition-all group-hover:tracking-wider">
-          <Sparkles className="w-5 h-5 animate-pulse" />
-          Automated Floorplan Generator
-          <Wand2 className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
-        </span>
-      </motion.button>
+      <div className="flex flex-col md:flex-row gap-4 mt-4">
+        <motion.button
+          whileHover={{ scale: 1.02, boxShadow: "0 0 25px rgba(251, 191, 36, 0.4)" }}
+          whileTap={{ scale: 0.98 }}
+          type="button"
+          onClick={onAutoGenerate}
+          disabled={blocked}
+          className="group relative flex-1 h-16 rounded-2xl bg-[#fbbf24]/10 border-2 border-[#fbbf24]/30 text-sm md:text-lg font-black text-[#fbbf24] shadow-pro-lift hover:bg-[#fbbf24]/20 transition-all disabled:cursor-not-allowed disabled:opacity-60 overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#fbbf24]/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+          <span className="relative flex items-center justify-center gap-2 transition-all group-hover:tracking-wider">
+            <Sparkles className="w-4 h-4 md:w-5 md:h-5 animate-pulse" />
+            Auto-Generate Plan
+            <Wand2 className="w-4 h-4 md:w-5 md:h-5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
+          </span>
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          type="button"
+          onClick={onBlankDraft}
+          className="flex-1 h-16 rounded-2xl bg-white/5 border border-white/10 text-sm md:text-lg font-bold text-white hover:bg-white/10 transition-all shadow-pro-lift"
+        >
+          Start Blank Draft
+        </motion.button>
+      </div>
     </motion.form>
   );
 }

@@ -141,6 +141,11 @@ export default function App() {
     navigate("/floorplanner");
   }, [formData, navigate]);
 
+  const handleStartBlankDraft = useCallback(() => {
+    setCustomFloorPlan([]);
+    navigate("/floorplanner");
+  }, [navigate]);
+
   const refreshSubscription = useCallback(async () => {
     try {
       const status = await fetchSubscriptionStatus();
@@ -213,6 +218,7 @@ export default function App() {
                 onChange={handleFieldChange}
                 onSubmit={handlePredictSubmit}
                 onAutoGenerate={handleGenerateFloorPlan}
+                onBlankDraft={handleStartBlankDraft}
                 loading={loading}
                 apiError={apiError}
                 isAuthenticated={isAuthenticated}

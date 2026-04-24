@@ -120,7 +120,7 @@ export function generateBoq(houseData, predictedCostInr) {
 }
 
 
-export function generateFloorPlanElements(houseData, includeFurniture = false) {
+export function generateFloorPlanElements(houseData, includeFurniture = true) {
   const bhk = Math.max(1, Math.min(10, Number(houseData.bhk || 1)));
   const builtupArea = Number(houseData.builtup_area_sqft || 1000);
   const floors = Number(houseData.floors || 1);
@@ -194,6 +194,8 @@ export function generateFloorPlanElements(houseData, includeFurniture = false) {
   if (includeFurniture) {
     addItem(centerX + 20, centerY + 20, 'sofa', 60, 40);
     addItem(centerX + livingW - 50, centerY + 20, 'desk', 40, 30); // TV unit
+    addItem(centerX + livingW / 2 - 30, centerY + livingH / 2 - 30, 'rug', 60, 60); // Center rug
+    addItem(centerX + livingW - 30, centerY + livingH - 30, 'plant', 20, 20); // Corner plant
   }
 
   // 2. Kitchen
@@ -205,6 +207,7 @@ export function generateFloorPlanElements(houseData, includeFurniture = false) {
   if (includeFurniture) {
     addItem(centerX + 10, centerY - kitchenH + 10, 'fridge', 25, 25);
     addItem(centerX + kitchenW - 35, centerY - kitchenH + 10, 'cabinet', 30, 20);
+    addItem(centerX + 10, centerY - kitchenH / 2, 'dining', 40, 30); // Small dining setup
   }
 
   // 3. Bedrooms
@@ -228,6 +231,7 @@ export function generateFloorPlanElements(houseData, includeFurniture = false) {
     if (includeFurniture) {
       addItem(rx + 20, ry + 20, 'bed', 50, 50);
       addItem(rx + pos.w - 40, ry + pos.h - 35, 'desk', 30, 25);
+      addItem(rx + 5, ry + 20, 'plant', 15, 15);
     }
   }
 
