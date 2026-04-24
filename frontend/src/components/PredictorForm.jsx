@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { Sparkles, Wand2 } from "lucide-react";
 import { CITY_OPTIONS, MATERIAL_OPTIONS, SOIL_OPTIONS } from "../constants";
 
 
@@ -7,6 +8,7 @@ export default function PredictorForm({
   formData,
   onChange,
   onSubmit,
+  onAutoGenerate,
   loading,
   apiError,
   isAuthenticated,
@@ -215,6 +217,22 @@ export default function PredictorForm({
           ) : (
             "Generate Construction Estimate"
           )}
+        </span>
+      </motion.button>
+
+      <motion.button
+        whileHover={{ scale: 1.02, boxShadow: "0 0 25px rgba(251, 191, 36, 0.4)" }}
+        whileTap={{ scale: 0.98 }}
+        type="button"
+        onClick={onAutoGenerate}
+        disabled={blocked}
+        className="group relative mt-4 h-16 w-full rounded-2xl bg-[#fbbf24]/10 border-2 border-[#fbbf24]/30 text-lg font-black text-[#fbbf24] shadow-pro-lift hover:bg-[#fbbf24]/20 transition-all disabled:cursor-not-allowed disabled:opacity-60 overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#fbbf24]/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+        <span className="relative flex items-center justify-center gap-3 transition-all group-hover:tracking-wider">
+          <Sparkles className="w-5 h-5 animate-pulse" />
+          Automated Floorplan Generator
+          <Wand2 className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0" />
         </span>
       </motion.button>
     </motion.form>

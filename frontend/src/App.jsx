@@ -31,6 +31,7 @@ import {
   analyzeEcoScore,
   analyzeVastuScore,
   generateBoq,
+  generateFloorPlanElements,
 } from "./utils/AnalysisEngine";
 import { useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -75,6 +76,7 @@ export default function App() {
   });
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [aiAdvice, setAiAdvice] = useState("");
+  const [customFloorPlan, setCustomFloorPlan] = useState(null);
   const floorPlanRef = useRef(null);
 
   const { user, isAuthenticated, logout } = useAuth();
@@ -132,6 +134,12 @@ export default function App() {
       setLoading(false);
     }
   };
+
+  const handleGenerateFloorPlan = useCallback(() => {
+    const elements = generateFloorPlanElements(formData);
+    setCustomFloorPlan(elements);
+    navigate("/floorplanner");
+  }, [formData, navigate]);
 
   const refreshSubscription = useCallback(async () => {
     try {
@@ -204,6 +212,7 @@ export default function App() {
                 formData={formData}
                 onChange={handleFieldChange}
                 onSubmit={handlePredictSubmit}
+                onAutoGenerate={handleGenerateFloorPlan}
                 loading={loading}
                 apiError={apiError}
                 isAuthenticated={isAuthenticated}
@@ -263,7 +272,7 @@ export default function App() {
                     </div>
                   }
                 >
-                  <FloorViewer formData={formData} />
+                  <FloorViewer formData={formData} onAutoGenerate={handleGenerateFloorPlan} />
                 </Suspense>
               </div>
               <div className="pro-card p-8 shadow-pro-lift border-pro-blue-200/30">
@@ -309,7 +318,7 @@ export default function App() {
           </div>
         }
       >
-        <FloorPlannerPage />
+        <FloorPlannerPage initialElements={customFloorPlan} />
       </Suspense>
     </>
   );

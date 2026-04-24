@@ -40,13 +40,21 @@ const BIM_LIBRARY = [
   { id: 'desk', icon: '🖥️', label: 'Desk', category: 'Furniture' },
 ];
 
-export default function FloorPlannerPage() {
+export default function FloorPlannerPage({ initialElements }) {
   const { user } = useAuth();
   const [activeTool, setActiveTool] = useState('select');
   const [calculatedArea, setCalculatedArea] = useState(0);
-  const [elements, setElements] = useState([
+  const [elements, setElements] = useState(initialElements || [
     { id: 'room-1', x: 200, y: 200, width: 400, height: 300, type: 'room', name: 'LIVING AREA', rotation: 0, color: "#fbbf24" },
   ]);
+
+  useEffect(() => {
+    if (initialElements) {
+      setElements(initialElements);
+      setHistory([initialElements]);
+      setHistoryStep(0);
+    }
+  }, [initialElements]);
   const [selectedId, setSelectedId] = useState(null);
   const [viewMode, setViewMode] = useState('2d');
   const [lightingMode, setLightingMode] = useState('day'); // 'day', 'night', 'punk'

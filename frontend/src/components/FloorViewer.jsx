@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows, Environment, OrbitControls } from "@react-three/drei"; 
@@ -102,7 +103,7 @@ function HouseModel({ width, depth, floors, bhk, viewMode }) {
   );
 }
 
-export default function FloorViewer({ formData, onViewModeChange }) {
+export default function FloorViewer({ formData, onAutoGenerate }) {
   const [viewMode, setViewMode] = useState("3d");
 
   const width = useMemo(
@@ -119,12 +120,13 @@ export default function FloorViewer({ formData, onViewModeChange }) {
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-100">Live Spatial Preview</h2>
-        <Link 
-          to="/floorplanner" 
-          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold rounded-md shadow-lg hover:shadow-xl transition-all"
+        <button 
+          onClick={onAutoGenerate}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white text-[11px] font-black uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] hover:scale-105 transition-all group"
         >
-          Open Full CAD Editor →
-        </Link>
+          <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
+          Automated Generator
+        </button>
       </div> 
       <div className="h-[min(360px,calc(100vh-20rem))] overflow-hidden rounded-xl border border-slate-700/50 sm:h-[min(400px,calc(100vh-18rem))] lg:h-[min(480px,calc(100vh-14rem))] xl:h-[min(540px,calc(100vh-12rem))]">
         <Canvas shadows camera={{ position: [7.5, 6.8, 8], fov: 45 }}>

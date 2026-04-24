@@ -119,6 +119,129 @@ export function generateBoq(houseData, predictedCostInr) {
   }));
 }
 
+
+export function generateFloorPlanElements(houseData, includeFurniture = false) {
+  const bhk = Math.max(1, Math.min(10, Number(houseData.bhk || 1)));
+  const builtupArea = Number(houseData.builtup_area_sqft || 1000);
+  const floors = Number(houseData.floors || 1);
+  
+  const SCALE = 4; // 1ft = 4px
+  const elements = [];
+  
+  const centerX = 400;
+  const centerY = 300;
+
+  // Sizes in PX (1ft = 4px)
+  const DOOR_SIZE = 12; // 3ft
+  const WINDOW_SIZE = 24; // 6ft
+  const livingW = 18 * SCALE;
+  const livingH = 15 * SCALE;
+
+  function addRoomWithWalls(x, y, w, h, name, color, type = 'room') {
+    const roomId = `${type}-${name}-${Date.now()}-${Math.random()}`;
+    elements.push({
+      id: roomId,
+      x, y, width: w, height: h,
+      type: 'room', name, rotation: 0, color
+    });
+
+    const wallData = [
+      { x1: 0, y1: 0, x2: w, y2: 0 }, // Top
+      { x1: w, y1: 0, x2: w, y2: h }, // Right
+      { x1: w, y1: h, x2: 0, y2: h }, // Bottom
+      { x1: 0, y1: h, x2: 0, y2: 0 }, // Left
+    ];
+
+    wallData.forEach((wd, i) => {
+      elements.push({
+        id: `wall-${roomId}-${i}`,
+        x: x + wd.x1, y: y + wd.y1,
+        points: [0, 0, wd.x2 - wd.x1, wd.y2 - wd.y1],
+        type: 'wall', name: 'WALL', rotation: 0,
+        width: Math.max(2, Math.abs(wd.x2 - wd.x1)),
+        height: Math.max(2, Math.abs(wd.y2 - wd.y1)),
+        color: "#94a3b8" // Slate color for walls
+      });
+    });
+
+    return roomId;
+  }
+
+  function addOpening(x, y, type, rotation = 0) {
+    const isDoor = type === 'door';
+    elements.push({
+      id: `${type}-${Date.now()}-${Math.random()}`,
+      x, y, 
+      width: isDoor ? DOOR_SIZE : WINDOW_SIZE, 
+      height: isDoor ? DOOR_SIZE : 8,
+      type, name: type.toUpperCase(), rotation,
+      color: isDoor ? "#fb923c" : "#38bdf8" // Orange for doors, Blue for windows
+    });
+  }
+
+  function addItem(x, y, type, w = 40, h = 40, rotation = 0) {
+    elements.push({
+      id: `${type}-${Date.now()}-${Math.random()}`,
+      x, y, width: w, height: h,
+      type, name: type.toUpperCase(), rotation
+    });
+  }
+
+  // 1. Living Room
+  addRoomWithWalls(centerX, centerY, livingW, livingH, 'LIVING', "#fbbf24");
+  addOpening(centerX + livingW / 2 - DOOR_SIZE / 2, centerY + livingH - 4, 'door', 0);
+  
+  if (includeFurniture) {
+    addItem(centerX + 20, centerY + 20, 'sofa', 60, 40);
+    addItem(centerX + livingW - 50, centerY + 20, 'desk', 40, 30); // TV unit
+  }
+
+  // 2. Kitchen
+  const kitchenW = 10 * SCALE;
+  const kitchenH = 10 * SCALE;
+  addRoomWithWalls(centerX, centerY - kitchenH, kitchenW, kitchenH, 'KITCHEN', "#34d399");
+  addOpening(centerX + kitchenW - 5, centerY - kitchenH / 2 - WINDOW_SIZE / 2, 'window', 90);
+  
+  if (includeFurniture) {
+    addItem(centerX + 10, centerY - kitchenH + 10, 'fridge', 25, 25);
+    addItem(centerX + kitchenW - 35, centerY - kitchenH + 10, 'cabinet', 30, 20);
+  }
+
+  // 3. Bedrooms
+  const roomPositions = [
+    { x: centerX + livingW, y: centerY, w: 12 * SCALE, h: 12 * SCALE },
+    { x: centerX - 12 * SCALE, y: centerY, w: 12 * SCALE, h: 12 * SCALE },
+    { x: centerX + livingW, y: centerY - 12 * SCALE, w: 12 * SCALE, h: 12 * SCALE },
+    { x: centerX, y: centerY + livingH, w: 12 * SCALE, h: 12 * SCALE },
+  ];
+
+  for (let i = 0; i < bhk; i++) {
+    const pos = roomPositions[i % roomPositions.length];
+    const offset = Math.floor(i / roomPositions.length) * 10;
+    const rx = pos.x + offset;
+    const ry = pos.y + offset;
+    addRoomWithWalls(rx, ry, pos.w, pos.h, `BEDROOM ${i + 1}`, "#38bdf8");
+    
+    addOpening(rx + 5, ry + pos.h - 5, 'door', 0);
+    addOpening(rx + pos.w - 5, ry + pos.h / 2 - WINDOW_SIZE / 2, 'window', 90);
+    
+    if (includeFurniture) {
+      addItem(rx + 20, ry + 20, 'bed', 50, 50);
+      addItem(rx + pos.w - 40, ry + pos.h - 35, 'desk', 30, 25);
+    }
+  }
+
+  // 4. Bathrooms
+  const bathCount = Math.max(1, bhk - 1);
+  for (let i = 0; i < bathCount; i++) {
+    const bx = centerX + livingW - 30;
+    const by = centerY + livingH + 10 + (i * 50);
+    addRoomWithWalls(bx, by, 30, 40, 'BATH', "#818cf8");
+  }
+
+  return elements;
+}
+
 function getLabel(score) {
   if (score >= 85) return "Excellent";
   if (score >= 70) return "Strong";

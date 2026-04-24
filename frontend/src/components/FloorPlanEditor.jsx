@@ -205,15 +205,15 @@ export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'sele
                 }}
               >
                 {el.type === 'wall' ? (
-                  <Line points={el.points} stroke={isSelected ? THEME.WALL_ACTIVE : THEME.WALL_STROKE} strokeWidth={8} lineCap="square" />
+                  <Line points={el.points} stroke={isSelected ? THEME.WALL_ACTIVE : (el.color || THEME.WALL_STROKE)} strokeWidth={8} lineCap="square" />
                 ) : el.type === 'room' ? (
-                  <Rect width={el.width} height={el.height} fill={THEME.ROOM_FILL} stroke={isSelected ? THEME.GOLD : THEME.ROOM_STROKE} strokeWidth={2} cornerRadius={2} />
+                  <Rect width={el.width} height={el.height} fill={el.color ? `${el.color}33` : THEME.ROOM_FILL} stroke={isSelected ? THEME.GOLD : (el.color || THEME.ROOM_STROKE)} strokeWidth={2} cornerRadius={2} />
                 ) : (
                   <Group>
                     {SYMBOLS[el.type] ? (
-                      <Path data={SYMBOLS[el.type]} fill="rgba(255,255,255,0.08)" stroke={isSelected ? THEME.GOLD : THEME.TEXT_SECONDARY} strokeWidth={2} scaleX={el.width / 100} scaleY={el.height / 100} />
+                      <Path data={SYMBOLS[el.type]} fill={el.color ? `${el.color}22` : "rgba(255,255,255,0.08)"} stroke={isSelected ? THEME.GOLD : (el.color || THEME.TEXT_SECONDARY)} strokeWidth={2} scaleX={el.width / 100} scaleY={el.height / 100} />
                     ) : (
-                      <Rect width={el.width} height={el.height} fill="rgba(255,255,255,0.05)" stroke={isSelected ? THEME.GOLD : THEME.TEXT_SECONDARY} strokeWidth={1} />
+                      <Rect width={el.width} height={el.height} fill={el.color ? `${el.color}22` : "rgba(255,255,255,0.05)"} stroke={isSelected ? THEME.GOLD : (el.color || THEME.TEXT_SECONDARY)} strokeWidth={2} />
                     )}
                   </Group>
                 )}
