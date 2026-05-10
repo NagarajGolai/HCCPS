@@ -28,7 +28,7 @@ class FloorPlan(models.Model):
     bhk_count = models.IntegerField()
     floors = models.IntegerField(default=1)
     plot_area_sqft = models.FloatField(null=True, blank=True)
-    thumbnail = models.TextField(blank=True)  # SVG preview
+    thumbnail = models.TextField(null=True, blank=True)  # SVG preview
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     version = models.CharField(max_length=20, default='1.0')

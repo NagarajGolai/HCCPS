@@ -32,66 +32,102 @@ const SOIL_VASTU_FACTOR = {
 
 export function analyzeEcoScore(houseData) {
   const materialTier = houseData.material_tier || "Standard";
-  const base = ECO_BASE_SCORES[materialTier] ?? 60;
   
-  const solarBonus = houseData.has_solar ? 15 : 0;
-  const rainwaterBonus = houseData.has_rainwater ? 10 : 0;
-  const waterSourcePenalty = houseData.water_source === 'Borewell' ? 5 : 0;
+  // Base Score by Tier
+  let base = 0;
+  if (materialTier === 'Luxury') base = 35;
+  else if (materialTier === 'Premium') base = 25;
+  else base = 10;
+  
+  // Solar & Rainwater
+  const solarBonus = houseData.has_solar ? 25 : 0;
+  const rainwaterBonus = houseData.has_rainwater ? 20 : 0;
+  
+  // Roofing
+  let roofingBonus = 0;
+  if (houseData.roofing === 'Living Roof') roofingBonus = 20;
+  else if (houseData.roofing === 'Standard') roofingBonus = 10;
+  else if (houseData.roofing === 'Bare Concrete') roofingBonus = -15;
 
+  // Axis Bonus
+  const axisBonus = (houseData.facing === 'North' || houseData.facing === 'South') ? 10 : 0;
+
+  // Penalties
   const density = Number(houseData.builtup_area_sqft || 0) / Number(houseData.plot_area_sqft || 1);
-  const floorPenalty = Math.max(0, Number(houseData.floors || 1) - 2) * 3;
-  const densityPenalty = density > 1.1 ? Math.min(14, Math.round((density - 1.1) * 18)) : 0;
+  const densityPenalty = density > 1.1 ? Math.min(20, Math.round((density - 1.1) * 20)) : 0;
   
-  const score = Math.max(0, Math.min(100, Math.round(base + solarBonus + rainwaterBonus - waterSourcePenalty - floorPenalty - densityPenalty)));
+  let score = base + solarBonus + rainwaterBonus + roofingBonus + axisBonus - densityPenalty;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
   const improvement = MATERIAL_IMPROVEMENTS[materialTier] || MATERIAL_IMPROVEMENTS.Standard;
-  const projectedScore = Math.min(100, score + (houseData.has_solar ? 0 : improvement.ecoGain));
+  const projectedScore = Math.min(100, score + (houseData.has_solar ? 0 : 25) + (houseData.roofing === 'Living Roof' ? 0 : 15));
+
+  let label = "The Thermal Heat-Trap";
+  if (score >= 90) label = "The Net-Zero Echelon";
+  else if (score >= 60) label = "The Efficient Modern";
 
   return {
     score,
-    label: getLabel(score),
+    label,
     recommendation: improvement.recommendation,
-    ecoGain: improvement.ecoGain,
+    ecoGain: projectedScore - score,
     costDeltaPercent: improvement.costDeltaPercent,
     projectedScore,
   };
 }
 
 export function analyzeVastuScore(houseData) {
-  const floors = Number(houseData.floors || 1);
-  const builtup = Number(houseData.builtup_area_sqft || 1000);
-  const plot = Number(houseData.plot_area_sqft || 1200);
-  const soilBonus = SOIL_VASTU_FACTOR[houseData.soil_type] ?? 0;
-  
-  const facingBonus = houseData.facing === 'East' ? 8 : (houseData.facing === 'North' ? 5 : 0);
-  const kitchenBonus = houseData.kitchen_location === 'South-East' ? 12 : 0;
-  const boundaryBonus = houseData.has_boundary_wall ? 3 : 0;
-
-  const ratio = builtup / Math.max(plot, 1);
-  let score = 65; // Base score adjusted
-
-  score += facingBonus + kitchenBonus + boundaryBonus + soilBonus;
-
-  if (ratio <= 0.85) score += 10;
-  else if (ratio <= 1.05) score += 5;
-  else score -= 6;
-
-  if (floors <= 2) score += 4;
-  if (floors >= 4) score -= 5;
-
+  let score = 10; // Base baseline
   const findings = [];
-  if (houseData.facing !== 'East') findings.push(`${houseData.facing} facing is acceptable, but East orientation is preferred for morning prana.`);
-  if (houseData.kitchen_location !== 'South-East') findings.push("Kitchen is not in the Agni (SE) zone; consider minor interior adjustments.");
-  if (!houseData.has_boundary_wall) findings.push("Lack of boundary wall may affect energy containment and site security.");
-  if (ratio > 1.1) findings.push("High built-up density suggests tighter energy circulation zones.");
-  
-  if (findings.length === 0) {
-    findings.push("Your configuration is exceptionally well-aligned with Vastu principles.");
+
+  // Facing
+  if (houseData.facing === 'North-East') {
+    score += 35;
+    findings.push("Ishanya Paradigm: Main portal in North-East ensures maximum positive energy flow.");
+  } else if (['North', 'East', 'West'].includes(houseData.facing)) {
+    score += 20;
+    findings.push(`Remedial Tier: ${houseData.facing} entrance is auspicious but requires minor color remedies.`);
+  } else if (houseData.facing === 'South-West') {
+    score -= 20;
+    findings.push("Nairutya Conflict: South-West entrance acts as a significant energy drain.");
+  } else {
+    score += 5;
+    findings.push(`${houseData.facing} entrance is acceptable but not optimal.`);
+  }
+
+  // Kitchen
+  if (houseData.kitchen_location === 'South-East') {
+    score += 30;
+    findings.push("Agni Tattva: Kitchen is perfectly placed in the South-East.");
+  } else if (houseData.kitchen_location === 'North-West') {
+    score += 15;
+    findings.push("Vayu Tattva: North-West kitchen is an acceptable secondary location.");
+  } else if (['South-West', 'North-East'].includes(houseData.kitchen_location)) {
+    score -= 15;
+    findings.push(`Elemental Clash: Kitchen in ${houseData.kitchen_location} causes Fire/Water or Earth/Fire conflict.`);
+  }
+
+  // Brahmasthan
+  if (houseData.center_type === 'Open') {
+    score += 25;
+    findings.push("Brahmasthan: Central courtyard is a 0-weight zone, completely open for cosmic alignment.");
+  } else if (houseData.center_type === 'Light') {
+    score += 15;
+    findings.push("Brahmasthan: Light furniture in the center avoids energy stagnation.");
+  } else if (houseData.center_type === 'Heavy') {
+    score -= 25;
+    findings.push("Brahmasthan Blockage: Heavy pillar or staircase in the center causes severe energetic congestion.");
   }
 
   const bounded = Math.max(0, Math.min(100, Math.round(score)));
+  
+  let label = "The Nairutya Conflict";
+  if (bounded >= 90) label = "The Ishanya Paradigm";
+  else if (bounded >= 60) label = "The Remedial Tier";
+
   return {
     score: bounded,
-    label: getLabel(bounded),
+    label,
     findings,
   };
 }
@@ -115,7 +151,7 @@ export function generateBoq(houseData, predictedCostInr) {
   return entries.map((entry) => ({
     ...entry,
     amount: Math.round(base * entry.ratio * (1 + Math.max(0, floors - 2) * 0.02)),
-    qtyHint: `${Math.round((builtup * entry.ratio) / 12)} work units`,
+    qtyHint: `${Math.round((builtup * entry.ratio) / 12)} standard work units`,
   }));
 }
 

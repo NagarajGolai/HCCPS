@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import MyProjectsModal from "../components/MyProjectsModal";
 
 export default function MainLayout({ children, user, onLogout }) {
   return (
@@ -24,6 +26,12 @@ export default function MainLayout({ children, user, onLogout }) {
           <div className="flex items-center gap-4">
             {user ? (
               <>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-projects'))}
+                  className="px-4 py-2 text-sm font-semibold bg-pro-blue-500/20 text-pro-blue-300 border border-pro-blue-400/50 rounded-xl hover:bg-pro-blue-500/40 transition-colors"
+                >
+                  My Projects
+                </button>
                 <motion.span 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}

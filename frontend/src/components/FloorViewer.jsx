@@ -138,7 +138,11 @@ export default function FloorViewer({ formData, onAutoGenerate }) {
             shadow-mapSize-width={2048}
             shadow-mapSize-height={2048}
           />
-          <Environment preset="city" />
+          <Environment>
+            <color attach="background" args={['#e2e8f0']} />
+            <ambientLight intensity={0.8} />
+            <directionalLight position={[5, 5, 5]} intensity={1} />
+          </Environment>
           <HouseModel
             width={width}
             depth={depth}

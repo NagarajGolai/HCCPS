@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Line, Rect, Transformer, Text, Group, Circle, Path } from 'react-konva';
+import { Stage, Layer, Line, Rect, Transformer, Text, Group, Circle, Path, Image as KonvaImage } from 'react-konva';
+import { ASSET_URLS } from '../utils/FurnitureImages';
 
 const GRID_SIZE = 20;
 const MAJOR_GRID = 100;
@@ -23,6 +24,17 @@ const SYMBOLS = {
   bed: "M10,10 L90,10 L90,90 L10,90 Z M10,10 L10,30 L90,30 L90,10 Z M20,40 L45,40 L45,20 L20,20 Z M55,40 L80,40 L80,20 L55,20 Z",
   door: "M0,100 L0,0 A100,100 0 0,1 100,100",
   window: "M0,0 L100,0 L100,20 L0,20 Z M50,0 L50,20",
+};
+
+const URLImage = ({ src, ...props }) => {
+  const [image, setImage] = useState(null);
+  useEffect(() => {
+    if (!src) return;
+    const img = new window.Image();
+    img.src = src;
+    img.onload = () => setImage(img);
+  }, [src]);
+  return image ? <KonvaImage image={image} {...props} /> : null;
 };
 
 export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'select', setArea, zoom = 1, selectedId, setSelectedId, showMeasurements = true, showFurniture = true }) {
@@ -213,7 +225,9 @@ export default function FloorPlanEditor({ elements, onUpdate, activeTool = 'sele
                   <Rect width={el.width} height={el.height} fill={el.color ? `${el.color}33` : THEME.ROOM_FILL} stroke={isSelected ? THEME.GOLD : (el.color || THEME.ROOM_STROKE)} strokeWidth={2} cornerRadius={2} />
                 ) : (
                   <Group>
-                    {SYMBOLS[el.type] ? (
+                    {ASSET_URLS[el.type] ? (
+                      <URLImage src={ASSET_URLS[el.type]} width={el.width} height={el.height} />
+                    ) : SYMBOLS[el.type] ? (
                       <Path data={SYMBOLS[el.type]} fill={el.color ? `${el.color}22` : "rgba(255,255,255,0.08)"} stroke={isSelected ? THEME.GOLD : (el.color || THEME.TEXT_SECONDARY)} strokeWidth={2} scaleX={el.width / 100} scaleY={el.height / 100} />
                     ) : (
                       <Rect width={el.width} height={el.height} fill={el.color ? `${el.color}22` : "rgba(255,255,255,0.05)"} stroke={isSelected ? THEME.GOLD : (el.color || THEME.TEXT_SECONDARY)} strokeWidth={2} />

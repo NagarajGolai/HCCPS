@@ -61,10 +61,13 @@ class CostPredictionResponseSerializer(serializers.ModelSerializer):
 class MaterialMarketIndexSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialMarketIndex
-    fields = ["city", "material", "price_per_unit", "unit", "updated_at"]
+        fields = ["city", "material", "price_per_unit", "unit", "updated_at"]
 
 
 class FloorPlanSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    
     class Meta:
         model = FloorPlan
-        fields = '__all__'
+        fields = "__all__"
+        read_only_fields = ["user"]

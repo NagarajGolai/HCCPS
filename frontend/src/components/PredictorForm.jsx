@@ -74,12 +74,16 @@ export default function PredictorForm({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <label className="pro-label">Main Facing</label>
+              <label className="pro-label">Main Facing (Entrance)</label>
               <select name="facing" value={formData.facing} onChange={onChange} disabled={blocked} className="pro-input">
-                <option value="East">East (Recommended)</option>
+                <option value="North-East">North-East (Ishanya)</option>
+                <option value="East">East</option>
                 <option value="North">North</option>
                 <option value="West">West</option>
                 <option value="South">South</option>
+                <option value="South-West">South-West (Nairutya)</option>
+                <option value="North-West">North-West</option>
+                <option value="South-East">South-East</option>
               </select>
             </div>
             <div>
@@ -88,16 +92,16 @@ export default function PredictorForm({
                 <option value="South-East">South-East (Agni)</option>
                 <option value="North-West">North-West</option>
                 <option value="North-East">North-East</option>
+                <option value="South-West">South-West</option>
                 <option value="Other">Other</option>
               </select>
             </div>
             <div>
-              <label className="pro-label">Parking Capacity</label>
-              <select name="parking_capacity" value={formData.parking_capacity} onChange={onChange} disabled={blocked} className="pro-input">
-                <option value="None">None</option>
-                <option value="1 Car">1 Car</option>
-                <option value="2 Cars">2 Cars</option>
-                <option value="3+ Cars">3+ Cars</option>
+              <label className="pro-label">Brahmasthan (Center)</label>
+              <select name="center_type" value={formData.center_type} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="Open">Open / Courtyard</option>
+                <option value="Light">Light Furniture</option>
+                <option value="Heavy">Heavy Pillar / Staircase</option>
               </select>
             </div>
           </div>
@@ -138,6 +142,14 @@ export default function PredictorForm({
                 <p className="text-[10px] font-black text-white uppercase tracking-wider">Boundary Wall</p>
                 <p className="text-[9px] text-slate-500">Security & Privacy</p>
               </div>
+            </div>
+            <div>
+              <label className="pro-label">Roofing Treatment</label>
+              <select name="roofing" value={formData.roofing} onChange={onChange} disabled={blocked} className="pro-input">
+                <option value="Living Roof">Living Roof / SRI Paint (Eco-Best)</option>
+                <option value="Standard">Standard Waterproofing</option>
+                <option value="Bare Concrete">Bare Concrete (Heat Trap)</option>
+              </select>
             </div>
           </div>
         </div>

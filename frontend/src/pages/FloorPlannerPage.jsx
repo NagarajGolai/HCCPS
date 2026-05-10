@@ -5,7 +5,8 @@ import {
   Layers, Settings, Share2, Download, Database, Undo2, Redo2, 
   Maximize2, Cpu, Ruler, Box, ChevronLeft, ChevronRight, Zap, 
   Trash2, RotateCcw, Sun, Moon, Grid3X3, Palette, Car, TreePine, 
-  Lamp, Bath, Monitor, Refrigerator, Briefcase, Archive, Sparkles
+  Lamp, Bath, Monitor, Refrigerator, Briefcase, Archive, Sparkles,
+  Clock
 } from 'lucide-react';
 import FloorPlanEditor from '../components/FloorPlanEditor';
 import FloorPlan3D from '../components/FloorPlan3D';
@@ -16,6 +17,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import PricingModal from '../components/PricingModal';
 import SEO from '../components/SEO';
 import { analyzeEcoScore, analyzeVastuScore, generateBoq } from '../utils/AnalysisEngine';
+import { createFloorPlan, updateFloorPlan } from '../api/proptechApi';
 
 const panelVariants = {
   hiddenLeft: { x: -400, opacity: 0 },
@@ -31,16 +33,17 @@ const BIM_LIBRARY = [
   { id: 'door', icon: '🚪', label: 'Door', category: 'Openings' },
   { id: 'window', icon: '🪟', label: 'Window', category: 'Openings' },
   { id: 'sofa', icon: '🛋️', label: 'Sofa', category: 'Furniture' },
+  { id: 'cornerSofa', icon: '🛋️', label: 'L-Sofa', category: 'Furniture' },
   { id: 'bed', icon: '🛏️', label: 'Bed', category: 'Furniture' },
   { id: 'cabinet', icon: '🗄️', label: 'Cabinet', category: 'Furniture' },
   { id: 'fridge', icon: '🧊', label: 'Fridge', category: 'Appliances' },
+  { id: 'tv', icon: '📺', label: 'TV', category: 'Appliances' },
   { id: 'car', icon: '🚗', label: 'Car', category: 'Vehicle' },
   { id: 'bike', icon: '🏍️', label: 'Bike', category: 'Vehicle' },
   { id: 'tree', icon: '🌲', label: 'Tree', category: 'Exterior' },
-  { id: 'desk', icon: '🖥️', label: 'Desk', category: 'Furniture' },
 ];
 
-export default function FloorPlannerPage({ initialElements }) {
+export default function FloorPlannerPage({ initialElements, formData }) {
   const { user } = useAuth();
   const [activeTool, setActiveTool] = useState('select');
   const [calculatedArea, setCalculatedArea] = useState(0);
@@ -65,11 +68,9 @@ export default function FloorPlannerPage({ initialElements }) {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const subscription = useSubscription();
   
-  const [formData, setFormData] = useState({
-    city: "Mumbai", plot_area_sqft: 2400, builtup_area_sqft: 0, floors: 1, bhk: 3, material_tier: "Premium", soil_type: "Loamy",
-  });
 
   const [history, setHistory] = useState([elements]);
   const [historyStep, setHistoryStep] = useState(0);
@@ -167,6 +168,30 @@ export default function FloorPlannerPage({ initialElements }) {
     });
   };
 
+  const handleSave = async () => {
+    if (!user) {
+      alert("Please sign in to save your floor plans to the cloud.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await createFloorPlan({
+        title: `Blueprint - ${new Date().toLocaleDateString()}`,
+        json_data: elements,
+        total_area_sqft: calculatedArea || formData.builtup_area_sqft || 1000,
+        bhk_count: formData.bhk || 3,
+        floors: formData.floors || 1,
+        plot_area_sqft: formData.plot_area_sqft || 1800,
+      });
+      alert("Floor plan saved successfully to your cloud profile!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save floor plan.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-[#020617] text-slate-100 font-sans flex flex-col overflow-hidden">
       <SEO title="Proverse Studio | Professional Floor Planner" description="High-performance architectural drafting suite." />
@@ -208,6 +233,8 @@ export default function FloorPlannerPage({ initialElements }) {
             <button onClick={redo} className="p-1.5 hover:bg-white/5 rounded-md text-slate-400 disabled:opacity-30" disabled={historyStep === history.length - 1}><Redo2 size={14} /></button>
           </div>
           <div className="h-6 w-px bg-white/10" />
+          <button onClick={() => window.dispatchEvent(new CustomEvent('open-projects'))} className="flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"><Clock size={14} /> My Projects</button>
+          <button onClick={handleSave} disabled={isSaving} className="flex items-center gap-2 px-4 py-1.5 bg-indigo-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg hover:bg-indigo-400 transition-all disabled:opacity-50"><Database size={14} /> {isSaving ? 'Saving...' : 'Save'}</button>
           <button onClick={handleShare} className="flex items-center gap-2 px-4 py-1.5 bg-[#fbbf24] text-slate-950 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-lg hover:bg-yellow-400 transition-all"><Share2 size={14} /> Share</button>
           <button onClick={handleExport} className="flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"><Download size={14} /> Export</button>
         </div>

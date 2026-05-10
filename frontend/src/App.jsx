@@ -21,11 +21,13 @@ import {
 import { fetchSubscriptionStatus, predictCost } from "./api/proptechApi";
 import AnalysisPanel from "./components/AnalysisPanel";
 import PricingModal from "./components/PricingModal";
+import MyProjectsModal from "./components/MyProjectsModal";
 import DeveloperSettings from "./components/DeveloperSettings";
 import MarketDashboard from "./components/MarketDashboard";
 import PredictionResult from "./components/PredictionResult";
 import PredictorForm from "./components/PredictorForm";
 import SEO from "./components/SEO";
+import Footer from "./components/Footer";
 import MainLayout from "./layouts/MainLayout";
 import {
   analyzeEcoScore,
@@ -41,10 +43,15 @@ const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const FloorPlannerPage = lazy(() => import("./pages/FloorPlannerPage"));
+const DevelopersPage = lazy(() => import("./pages/DevelopersPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
 
 const FloorViewer = lazy(() => import("./components/FloorViewer"));
 const AIArchitectChat = lazy(() => import("./components/AIArchitectChat"));
 const ExportEngine = lazy(() => import("./components/ExportEngine"));
+const ExportLayoutRender = lazy(() => import("./components/ExportLayoutRender"));
 
 const INITIAL_FORM_STATE = {
   city: "Mumbai",
@@ -61,6 +68,8 @@ const INITIAL_FORM_STATE = {
   parking_capacity: "1 Car",
   water_source: "Municipal",
   has_boundary_wall: true,
+  center_type: "Open",
+  roofing: "Standard",
 };
 
 export default function App() {
@@ -70,6 +79,7 @@ export default function App() {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [isProjectsOpen, setIsProjectsOpen] = useState(false);
   const [subscription, setSubscription] = useState({
     plan: "free",
     is_active: false,
@@ -78,6 +88,7 @@ export default function App() {
   const [aiAdvice, setAiAdvice] = useState("");
   const [customFloorPlan, setCustomFloorPlan] = useState(null);
   const floorPlanRef = useRef(null);
+  const exportContainerRef = useRef(null);
 
   const { user, isAuthenticated, logout } = useAuth();
 
@@ -141,6 +152,11 @@ export default function App() {
     navigate("/floorplanner");
   }, [formData, navigate]);
 
+  const handleOpenFloorPlan = useCallback((plan) => {
+    setCustomFloorPlan(plan.json_data);
+    navigate("/floorplanner");
+  }, [navigate]);
+
   const handleStartBlankDraft = useCallback(() => {
     setCustomFloorPlan([]);
     navigate("/floorplanner");
@@ -174,10 +190,14 @@ export default function App() {
 
   useEffect(() => {
     posthog.capture("$pageview", { pathname: location.pathname });
+    
+    const handleOpenProjects = () => setIsProjectsOpen(true);
+    window.addEventListener('open-projects', handleOpenProjects);
+    return () => window.removeEventListener('open-projects', handleOpenProjects);
   }, [location.pathname]);
 
   const renderPredictorPage = () => (
-    <MainLayout user={user} onLogout={logout}>
+    <MainLayout user={user} onLogout={logout} onOpenProject={handleOpenFloorPlan}>
       <SEO
         title="AI Predictor Dashboard | PropVerse AI"
         description="Run ML-backed construction estimates with interactive 3D floor visualization and sustainability analytics."
@@ -251,7 +271,7 @@ export default function App() {
               </div>
               <AnalysisPanel eco={eco} vastu={vastu} />
               <ExportEngine
-                floorPlanRef={floorPlanRef}
+                floorPlanRef={exportContainerRef}
                 formData={formData}
                 prediction={prediction}
                 eco={eco}
@@ -264,6 +284,13 @@ export default function App() {
                 onRequireUpgrade={() => setCheckoutOpen(true)}
               />
               <DeveloperSettings isAuthenticated={isAuthenticated} />
+              <div className="absolute left-[-9999px] top-[-9999px] opacity-0 pointer-events-none">
+                <div ref={exportContainerRef}>
+                  <Suspense fallback={null}>
+                    <ExportLayoutRender elements={customFloorPlan || generateFloorPlanElements(formData)} />
+                  </Suspense>
+                </div>
+              </div>
             </div>
 
             <div className="pro-space-y lg:sticky lg:top-20 lg:max-h-[85vh] lg:overflow-y-auto lg:pr-4">
@@ -324,7 +351,7 @@ export default function App() {
           </div>
         }
       >
-        <FloorPlannerPage initialElements={customFloorPlan} />
+        <FloorPlannerPage initialElements={customFloorPlan} formData={formData} />
       </Suspense>
     </>
   );
@@ -365,8 +392,23 @@ export default function App() {
           }
         />
         
+        <Route path="/developers" element={<DevelopersPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      
+      {location.pathname !== "/predictor" && location.pathname !== "/floorplanner" && (
+        <Footer />
+      )}
+
+      <MyProjectsModal 
+        isOpen={isProjectsOpen} 
+        onClose={() => setIsProjectsOpen(false)} 
+        onOpenProject={handleOpenFloorPlan}
+      />
     </Suspense>
   );
 }

@@ -52,7 +52,7 @@ export default function ExportEngine({
       pdf.text(`SPECIFICATIONS: ${formData.bhk} BHK | ${formData.floors} FLOORS | ${formData.city}`, 14, 30);
 
       // Floor Plan Section
-      if (floorPlanRef?.current) {
+      if (prediction && floorPlanRef?.current) {
         const canvas = await html2canvas(floorPlanRef.current, {
           backgroundColor: "#0f172a",
           scale: 2,
@@ -62,6 +62,12 @@ export default function ExportEngine({
         pdf.setFillColor(30, 41, 59); // slate-800
         pdf.rect(12, 45, pageWidth - 24, 80, "F");
         pdf.addImage(image, "PNG", 14, 47, 182, 76);
+      } else {
+        // Blank floorplan if no prediction is entered yet
+        pdf.setFillColor(30, 41, 59); 
+        pdf.rect(12, 45, pageWidth - 24, 80, "F");
+        pdf.setTextColor(100, 116, 139);
+        pdf.text("FLOOR PLAN GENERATION PENDING (ENTER DETAILS TO ACTIVATE)", pageWidth / 2, 85, { align: "center" });
       }
 
       let y = 135;
@@ -127,6 +133,16 @@ export default function ExportEngine({
         pdf.text(`${line.qtyHint}`, 130, y);
         y += 5;
       });
+      
+      // Work Unit Note
+      y += 2;
+      pdf.setFontSize(7);
+      pdf.setTextColor(100, 116, 139);
+      pdf.setFont("helvetica", "italic");
+      const note = "*NOTE: A \"Work Unit\" is a standardized industry metric representing a combination of labor hours and material volume required for a specific task. It simplifies complex construction activities into an easily understandable figure.";
+      const splitNote = pdf.splitTextToSize(note, pageWidth - 28);
+      pdf.text(splitNote, 14, y);
+      y += (splitNote.length * 4) + 4;
 
       // Vastu & Eco Summary
       y = 225;

@@ -23,6 +23,21 @@ export default function AnalysisPanel({ eco, vastu }) {
       animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-slate-700/70 bg-slate-900/75 p-5 shadow-glow backdrop-blur"
     >
+      {eco.score >= 90 && vastu.score >= 90 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-4 rounded-xl border-2 border-[#fbbf24] bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-yellow-500/20 p-4 shadow-[0_0_20px_rgba(251,191,36,0.3)] backdrop-blur-md"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">👑</span>
+            <div>
+              <h4 className="text-sm font-black uppercase tracking-widest text-[#fbbf24]">Elite Blueprint</h4>
+              <p className="text-xs font-semibold text-amber-100/80">This design is spiritually and environmentally impervious to failure.</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
       <h3 className="text-lg font-semibold text-slate-100">Vastu & Sustainability Engine</h3>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="rounded-xl border border-slate-700 bg-slate-800/60 p-4">

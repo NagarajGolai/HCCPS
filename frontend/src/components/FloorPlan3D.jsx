@@ -4,6 +4,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, ContactShadows, Text, Float, Environment, Stars, Sky, MeshReflectorMaterial, Html, PointerLockControls } from '@react-three/drei';
 import { Sun, Moon, Sparkles, Hexagon } from 'lucide-react';
 import * as THREE from 'three';
+import { ASSET_URLS } from '../utils/FurnitureImages';
 
 const PX_TO_FT = 0.25; 
 const WALL_HEIGHT = 10;
@@ -27,17 +28,20 @@ function RealisticModel({ type, color, args, lightingMode }) {
       };
     }
     if (lightingMode === 'night') {
-      return { color: color, roughness: 0.4, metalness: 0.5, emissive: "#000000", emissiveIntensity: 0 };
+      return { color: color, roughness: 0.3, metalness: 0.8, emissive: color, emissiveIntensity: 0.2 };
     }
     if (lightingMode === 'glass') {
       return {
         color: color,
         roughness: 0.1,
-        metalness: 0.8,
-        emissive: "#000000",
-        emissiveIntensity: 0,
+        metalness: 0.9,
+        emissive: color,
+        emissiveIntensity: 0.2,
         clearcoat: 1,
-        clearcoatRoughness: 0.1
+        clearcoatRoughness: 0.1,
+        transmission: 0.9,
+        transparent: true,
+        opacity: 0.8
       };
     }
     return { color: color, roughness: 0.3, metalness: 0.05, emissive: "#000000", emissiveIntensity: 0 };
@@ -72,8 +76,11 @@ function FurnitureModel({ type, color, args, lightingMode }) {
   
   useEffect(() => {
     if (['room', 'wall', 'door', 'window'].includes(type)) return;
+    const url = ASSET_URLS[type];
+    if (!url) return;
+    
     const loader = new THREE.TextureLoader();
-    loader.load(`/${type}.png`, 
+    loader.load(url, 
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         setTexture(tex);
@@ -189,13 +196,15 @@ function ArchitecturalElement({ element, index, lightingMode, showMeasurements, 
             <mesh position={[0, data.args[1]/2, 0]} castShadow receiveShadow>
               <boxGeometry args={data.args} />
               <meshPhysicalMaterial 
-                transmission={1} 
+                transmission={0.95} 
                 opacity={1} 
-                metalness={0} 
-                roughness={0.2} 
-                ior={1.5} 
-                thickness={2} 
-                color="#ffffff" 
+                metalness={0.1} 
+                roughness={0.1} 
+                ior={1.3} 
+                thickness={5} 
+                color="#7dd3fc" 
+                emissive="#0284c7"
+                emissiveIntensity={0.2}
               />
             </mesh>
           ) : (
@@ -289,8 +298,8 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
       scene.background = new THREE.Color('#010409');
       scene.fog = null;
     } else if (isGlass) {
-      scene.background = new THREE.Color('#f8fafc');
-      scene.fog = new THREE.FogExp2('#f8fafc', 0.001);
+      scene.background = new THREE.Color('#020617');
+      scene.fog = new THREE.FogExp2('#020617', 0.002);
     } else {
       scene.background = null;
       scene.fog = null;
@@ -310,7 +319,10 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
       {isDay && (
         <>
           <Sky sunPosition={[-50, 10, 100]} turbidity={0.01} rayleigh={2} />
-          <Environment preset="park" intensity={0.8} />
+          <Environment intensity={0.8}>
+            <color attach="background" args={['#87CEEB']} />
+            <ambientLight intensity={1} />
+          </Environment>
           <ambientLight intensity={1.2} />
           <directionalLight position={[-100, 50, 150]} intensity={3.5} castShadow color="#fff7ed" />
         </>
@@ -319,9 +331,13 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
       {isNight && (
         <>
           <Stars radius={500} depth={50} count={18000} factor={6} saturation={0} fade speed={2} />
-          <Environment preset="night" intensity={0.7} />
-          <ambientLight intensity={0.6} />
-          <spotLight position={[bounds.center[0], 250, bounds.center[2]]} intensity={100} color="#ffffff" castShadow angle={0.4} />
+          <Environment intensity={0.7}>
+            <color attach="background" args={['#010409']} />
+            <ambientLight intensity={0.5} />
+          </Environment>
+          <ambientLight intensity={1.2} />
+          <spotLight position={[bounds.center[0], 250, bounds.center[2]]} intensity={150} color="#e0f2fe" castShadow angle={0.5} penumbra={0.5} />
+          <directionalLight position={[100, 50, 100]} intensity={0.5} color="#38bdf8" />
         </>
       )}
 
@@ -338,10 +354,14 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
 
       {isGlass && (
         <>
-          <Environment preset="city" background blur={0.8} />
-          <ambientLight intensity={1.5} color="#ffffff" />
-          <directionalLight position={[100, 200, 100]} intensity={3} castShadow color="#ffffff" />
-          <directionalLight position={[-100, 100, -100]} intensity={1} color="#e0f2fe" />
+          <Environment background blur={0.8}>
+            <color attach="background" args={['#020617']} />
+            <ambientLight intensity={1} color="#38bdf8" />
+            <directionalLight position={[5, 5, 5]} intensity={5} color="#e0f2fe" />
+          </Environment>
+          <ambientLight intensity={1.5} color="#e0f2fe" />
+          <directionalLight position={[100, 200, 100]} intensity={4} castShadow color="#ffffff" />
+          <directionalLight position={[-100, 100, -100]} intensity={3} color="#38bdf8" />
         </>
       )}
 
@@ -357,7 +377,10 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
         ) : isGlass ? (
           <mesh name="base-floor" rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]} receiveShadow>
             <planeGeometry args={[20000, 20000]} />
-            <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.1} />
+            <MeshReflectorMaterial
+              blur={[500, 100]} resolution={1024} mixBlur={1} mixStrength={50} roughness={0.2} depthScale={1.2}
+              minDepthThreshold={0.4} maxDepthThreshold={1.4} color="#0f172a" metalness={0.8} mirror={0.8}
+            />
           </mesh>
         ) : (
           <mesh name="base-floor" rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]} receiveShadow>
@@ -383,7 +406,7 @@ function SceneContent({ elements, showGrid, lightingMode, isFirstPerson, showMea
   );
 }
 
-export default function FloorPlan3D({ elements = [], lightingMode = 'day', setLightingMode, viewMode = '3d', showGrid = true, showMeasurements = true, showFurniture = true }) {
+export default function FloorPlan3D({ elements = [], lightingMode = 'day', setLightingMode, viewMode = '3d', showGrid = true, showMeasurements = true, showFurniture = true, preserveDrawingBuffer = false }) {
   const [isFirstPerson, setIsFirstPerson] = React.useState(false);
 
   return (
@@ -423,7 +446,7 @@ export default function FloorPlan3D({ elements = [], lightingMode = 'day', setLi
         )}
       </div>
 
-      <Canvas shadows={true} dpr={[1, 2]} gl={{ antialias: true }}>
+      <Canvas shadows={true} dpr={[1, 2]} gl={{ antialias: true, preserveDrawingBuffer }}>
         <Suspense fallback={null}>
           <SceneContent elements={elements} showGrid={showGrid} lightingMode={lightingMode} isFirstPerson={isFirstPerson} showMeasurements={showMeasurements} showFurniture={showFurniture} />
         </Suspense>
